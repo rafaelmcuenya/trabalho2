@@ -79,7 +79,7 @@ void setCorPCirculo(Circulo c, char* novaCor);
    Altera a cor de preenchimento do círculo.
 */
 
-Anteparo* criar_anteparo_circulo(Circulo* circulo, char direcao, int novo_id);
+Anteparo* criarAnteparoC(Circulo* circulo, char direcao, int novo_id);
 /*
    Cria um novo anteparo, com um novo ID repassado pelo último parâmetro. Recebendo um círculo por meio do ID do primeiro parâmetro, calcula e transforma num anteparo, usando o segundo parâmetro para indicar a direção (vertical para v, ou horizontal para h).
     A função retorna um ponteiro do novo anteparo criado.
