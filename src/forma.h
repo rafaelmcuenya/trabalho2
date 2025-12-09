@@ -95,6 +95,12 @@ int validaTexto(void* txt);
    Retorna 1 se válido, 0 caso contrário.
 */
 
+int validaAnteparo(void* ant);
+/*
+   Função interna de validação para verificar se uma estrutura de anteparo é válida.
+   Retorna 1 se válida, 0 caso contrário.
+*/
+
 Circulo getCirculoFromForma(Forma f);
 /*
    Retorna o elemento Circulo contido na Forma.
