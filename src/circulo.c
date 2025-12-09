@@ -247,6 +247,18 @@ Anteparo* criarAnteparoC(Circulo* circulo, char direcao, int novo_id) {
     return criaAnteparo(p1, p2, circle->id, circle->corB);
 }
 
+Retangulo getBoundingBoxCirculo(Circulo c) {
+    if (!c) return NULL;
+    
+    CirculoStruct* circle = (CirculoStruct*)c;
+    double x = circle->x - circle->r;
+    double y = circle->y - circle->r;
+    double largura = 2 * circle->r;
+    double altura = 2 * circle->r;
+    
+    return criaRetangulo(-1, x, y, largura, altura, "000000", "FFFFFF");
+}
+
 void liberaCirculo(Circulo c){
     if (!c){
         fprintf(stderr, "Erro: tentativa de liberar círculo NULL\n");
