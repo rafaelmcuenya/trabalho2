@@ -224,45 +224,6 @@ Circulo clonaCirculo(Circulo c){
     return clone;
 }
 
-Anteparo criarAnteparoC(Circulo circulo, char direcao, int novo_id) {
-    if (!circulo) {
-        fprintf(stderr, "Erro: círculo NULL em criarAnteparoC\n");
-        return NULL;
-    }
-    
-    CirculoStruct* circle = (CirculoStruct*)circulo;
-    
-    if (novo_id <= 0) {
-        fprintf(stderr, "Erro: ID inválido para anteparo criado a partir do círculo\n");
-        return NULL;
-    }
-    
-    double x1, y1, x2, y2;
-    
-    if (direcao == 'h') {
-        x1 = circle->x - circle->r;
-        y1 = circle->y;
-        x2 = circle->x + circle->r;
-        y2 = circle->y;
-    } else if (direcao == 'v') {
-        x1 = circle->x;
-        y1 = circle->y - circle->r;
-        x2 = circle->x;
-        y2 = circle->y + circle->r;
-    } else {
-        fprintf(stderr, "Erro: direção inválida '%c' para conversão do círculo para anteparo. Use 'h' ou 'v'\n", direcao);
-        return NULL;
-    }
-
-    Anteparo anteparo = criaAnteparo(novo_id, x1, y1, x2, y2, circle->corB);
-    
-    if (!anteparo) {
-        fprintf(stderr, "Erro: falha ao criar anteparo a partir do círculo %d\n", circle->id);
-    }
-    
-    return anteparo;
-}
-
 void liberaCirculo(Circulo c){
     if (!c){
         fprintf(stderr, "Erro: tentativa de liberar círculo NULL\n");
