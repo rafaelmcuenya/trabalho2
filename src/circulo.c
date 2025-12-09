@@ -224,7 +224,7 @@ Circulo clonaCirculo(Circulo c){
     return clone;
 }
 
-Anteparo* criar_anteparo_circulo(Circulo* circulo, char direcao, int novo_id) {
+Anteparo* criarAnteparoC(Circulo* circulo, char direcao, int novo_id) {
     if (!circulo || (direcao != 'h' && direcao != 'v')) {
         return NULL;
     }
