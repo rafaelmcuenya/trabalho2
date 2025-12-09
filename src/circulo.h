@@ -85,6 +85,11 @@ Anteparo* criarAnteparoC(Circulo* circulo, char direcao, int novo_id);
     A função retorna um ponteiro do novo anteparo criado.
 */
 
+Retangulo getBoundingBoxCirculo(Circulo c);
+/*
+   Retorna a bounding box do círculo (retângulo envolvente)
+*/
+
 void liberaCirculo(Circulo c);
 /*
    Libera toda a memória associada ao círculo passado como parâmetro. Essa função deve ser utilizada sempre que o círculo não for mais necessário.
