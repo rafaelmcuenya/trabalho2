@@ -92,7 +92,7 @@ double areaCirculo(Circulo c){
         return -1.0;
     }
     CirculoStruct* circle = (CirculoStruct*)c;
-    return circle->r * circle->r * 3.14;
+    return circle->r * circle->r * M_PI;
 }
 
 int idCirculo(Circulo c){
@@ -225,33 +225,26 @@ Circulo clonaCirculo(Circulo c){
 }
 
 Anteparo* criarAnteparoC(Circulo* circulo, char direcao, int novo_id) {
-    if (!circulo || (direcao != 'h' && direcao != 'v')) {
+   if (!c) return NULL;
+    
+    CirculoStruct* circle = (CirculoStruct*)c;
+    Ponto p1, p2;
+    
+    if (direcao == 'h') {
+        p1.x = circle->x - circle->r;
+        p1.y = circle->y;
+        p2.x = circle->x + circle->r;
+        p2.y = circle->y;
+    } else if (direcao == 'v') {
+        p1.x = circle->x;
+        p1.y = circle->y - circle->r;
+        p2.x = circle->x;
+        p2.y = circle->y + circle->r;
+    } else {
+        fprintf(stderr, "Erro: orientação inválida para conversão do círculo para anteparo\n");
         return NULL;
     }
-
-    Anteparo* ant = (Anteparo*)malloc(sizeof(Anteparo));
-    if (!seg) return NULL;
-
-    seg->id = novo_id;
-    seg->cor = circle->cor_borda;
-
-    double x = circle->ancora.x;
-    double y = circle->ancora.y;
-    double r = circle->raio;
-
-    if (direcao == 'h') {
-        ant->p1.x = x - r;
-        ant->p1.y = y;
-        ant->p2.x = x + r;
-        ant->p2.y = y;
-    } else {
-        ant->p1.x = x;
-        ant->p1.y = y - r;
-        ant->p2.x = x;
-        ant->p2.y = y + r;
-    }
-
-    return ant;
+    return criaAnteparo(p1, p2, circle->id, circle->corB);
 }
 
 void liberaCirculo(Circulo c){
