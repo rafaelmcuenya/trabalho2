@@ -34,7 +34,7 @@ void moveRetangulo(Retangulo r, double x, double y);
    Por meio do ID repassado pelo primeiro parâmetro, move a âncora de tal forma em tantas coordenadas no eixo x e eixo y, valores repassados respectivamente pelos segundo e terceiro parâmetros.   
 */
 
-Retangulo clonaRetangulo(Retangulo r);
+Retangulo clonaRetangulo(Retangulo r, int novoId);
 /*
    Cria uma cópia idêntica do retângulo, retornando um ponteiro para o novo retângulo com os mesmos atributos.
 */
@@ -89,7 +89,8 @@ void setCorPRetangulo(Retangulo r, char* novaCor);
 
 void liberaRetangulo(Retangulo r);
 /*
-   Libera toda a memória associada ao retangulo passado como parâmetro.Essa função deve ser utilizada sempre que o retangulo não for mais necessário.
+   Libera toda a memória associada ao retangulo passado como parâmetro.
+   Essa função deve ser utilizada sempre que o retangulo não for mais necessário.
 */
 
 #endif
