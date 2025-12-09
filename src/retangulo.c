@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include "strdupi.h"
 #include "retangulo.h"
-#include "anteparo.h"
 
 typedef struct{
     int id;
@@ -130,14 +129,18 @@ void moveRetangulo(Retangulo r, double dx, double dy){
     }
 }
 
-Retangulo clonaRetangulo(Retangulo r){
+Retangulo clonaRetangulo(Retangulo r, int novoId){
     if (!r){
         fprintf(stderr, "Erro: tentativa de clonagem de retângulo NULL\n");
         return NULL;
     }
     
+    if (novoId <= 0) {
+        fprintf(stderr, "Erro: ID inválido para clone do retângulo\n");
+        return NULL;
+    }
+    
     RetanguloStruct* rect = (RetanguloStruct*)r;
-    int novoId = rect->id + 300;
     Retangulo clone = criaRetangulo(novoId, rect->x, rect->y, rect->largura, rect->altura, rect->corB, rect->corP);
     
     if (!clone){
@@ -215,7 +218,7 @@ double getAlturaRetangulo(Retangulo r){
 }
 
 void setCorBRetangulo(Retangulo r, char* novaCor){
-    if (!r || !novaCor){
+    if (!r || !novaCor || strlen(novaCor) == 0) {
         fprintf(stderr, "Erro: parâmetros inválidos em setCorBRetangulo\n");
         return;
     }
@@ -224,7 +227,7 @@ void setCorBRetangulo(Retangulo r, char* novaCor){
 }
 
 void setCorPRetangulo(Retangulo r, char* novaCor){
-    if (!r || !novaCor){
+    if (!r || !novaCor || strlen(novaCor) == 0) {
         fprintf(stderr, "Erro: parâmetros inválidos em setCorPRetangulo\n");
         return;
     }
