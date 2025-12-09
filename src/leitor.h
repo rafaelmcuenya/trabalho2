@@ -19,31 +19,6 @@ void finalizarSistema(void);
    Libera toda a memória alocada pelo sistema e finaliza todos os componentes. Deve ser chamado ao término da execução.
 */
 
-double getPontuacaoFinal(void);
-/*
-   Retorna a pontuação total acumulada de todos os cálculos realizados.
-*/
-
-int getTotalInstrucoes(void);
-/*
-   Retorna o número total de instruções processadas.
-*/
-
-int getTotalDisparos(void);
-/*
-   Retorna o número total de disparos realizados.
-*/
-
-int getTotalEsmagadas(void);
-/*
-   Retorna o número total de formas esmagadas.
-*/
-
-int getTotalClonadas(void);
-/*
-   Retorna o número total de formas clonadas.
-*/
-
 void abrirArquivo(FILE **f, const char *caminho);
 /*
    Abre um arquivo para leitura, tratando erros de abertura.
