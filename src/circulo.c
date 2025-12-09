@@ -224,39 +224,43 @@ Circulo clonaCirculo(Circulo c){
     return clone;
 }
 
-Anteparo* criarAnteparoC(Circulo* circulo, char direcao, int novo_id) {
-   if (!c) return NULL;
-    
-    CirculoStruct* circle = (CirculoStruct*)c;
-    Ponto p1, p2;
-    
-    if (direcao == 'h') {
-        p1.x = circle->x - circle->r;
-        p1.y = circle->y;
-        p2.x = circle->x + circle->r;
-        p2.y = circle->y;
-    } else if (direcao == 'v') {
-        p1.x = circle->x;
-        p1.y = circle->y - circle->r;
-        p2.x = circle->x;
-        p2.y = circle->y + circle->r;
-    } else {
-        fprintf(stderr, "Erro: orientação inválida para conversão do círculo para anteparo\n");
+Anteparo criarAnteparoC(Circulo circulo, char direcao, int novo_id) {
+    if (!circulo) {
+        fprintf(stderr, "Erro: círculo NULL em criarAnteparoC\n");
         return NULL;
     }
-    return criaAnteparo(p1, p2, circle->id, circle->corB);
-}
+    
+    CirculoStruct* circle = (CirculoStruct*)circulo;
+    
+    if (novo_id <= 0) {
+        fprintf(stderr, "Erro: ID inválido para anteparo criado a partir do círculo\n");
+        return NULL;
+    }
+    
+    double x1, y1, x2, y2;
+    
+    if (direcao == 'h') {
+        x1 = circle->x - circle->r;
+        y1 = circle->y;
+        x2 = circle->x + circle->r;
+        y2 = circle->y;
+    } else if (direcao == 'v') {
+        x1 = circle->x;
+        y1 = circle->y - circle->r;
+        x2 = circle->x;
+        y2 = circle->y + circle->r;
+    } else {
+        fprintf(stderr, "Erro: direção inválida '%c' para conversão do círculo para anteparo. Use 'h' ou 'v'\n", direcao);
+        return NULL;
+    }
 
-Retangulo getBoundingBoxCirculo(Circulo c) {
-    if (!c) return NULL;
+    Anteparo anteparo = criaAnteparo(novo_id, x1, y1, x2, y2, circle->corB);
     
-    CirculoStruct* circle = (CirculoStruct*)c;
-    double x = circle->x - circle->r;
-    double y = circle->y - circle->r;
-    double largura = 2 * circle->r;
-    double altura = 2 * circle->r;
+    if (!anteparo) {
+        fprintf(stderr, "Erro: falha ao criar anteparo a partir do círculo %d\n", circle->id);
+    }
     
-    return criaRetangulo(-1, x, y, largura, altura, "000000", "FFFFFF");
+    return anteparo;
 }
 
 void liberaCirculo(Circulo c){
