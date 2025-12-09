@@ -16,7 +16,7 @@ Ponto criaPonto(double x, double y) {
         return NULL;
     }
     
-    struct PontoStruct* p = (struct PontoStruct*)malloc(sizeof(struct PontoStruct));
+    PontoStruct* p = (PontoStruct*)malloc(sizeof(PontoStruct));
     if (p == NULL) {
         return NULL;
     }
