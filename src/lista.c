@@ -7,24 +7,24 @@ typedef struct no {
     void *data;          
     struct no *prev;    
     struct no *next;   
-} No;
+} Node;
 
 struct lista {
-    No *head;          
-    No *tail;         
+    Node *head;          
+    Node *tail;         
     int tam;             
 };
 
-static No* criaNo(void *data) {
-    No *novoNo = (No*)malloc(sizeof(No));
-    if (!novoNo) {
+static Node* criaNode(void *data) {
+    Node *novoNode = (Node*)malloc(sizeof(Node));
+    if (!novoNode) {
         fprintf(stderr, "Erro: falha na alocação do nó\n");
         return NULL;
     }
     
-    novoNo->data = data;
-    novoNo->prev = NULL;
-    novoNo->next = NULL;
+    novoNode->data = data;
+    novoNode->prev = NULL;
+    novoNode->next = NULL;
     
     return novoNo;
 }
@@ -57,16 +57,16 @@ void insereHead(Lista *l, void *novaInfo) {
         return;
     }
     
-    No *novoNo = criaNo(novaInfo);
-    if (!novoNo) return;
+    Node *novoNode = criaNo(novaInfo);
+    if (!novoNode) return;
     
     if (estaVazia(l)) {
-        l->head = novoNo;
-        l->tail = novoNo;
+        l->head = novoNode;
+        l->tail = novoNode;
     } else {
         novoNo->next = l->head;
-        l->head->prev = novoNo;
-        l->head = novoNo;
+        l->head->prev = novoNode;
+        l->head = novoNode;
     }
     
     l->tam++;
@@ -78,16 +78,16 @@ void insereTail(Lista *l, void *novaInfo) {
         return;
     }
     
-    No *novoNo = criaNo(novaInfo);
-    if (!novoNo) return;
+    Node *novoNode = criaNo(novaInfo);
+    if (!novoNode) return;
     
     if (estaVazia(l)) {
-        l->head = novoNo;
-        l->tail = novoNo;
+        l->head = novoNode;
+        l->tail = novoNode;
     } else {
         novoNo->prev = l->tail;
-        l->tail->next = novoNo;
-        l->tail = novoNo;
+        l->tail->next = novoNode;
+        l->tail = novoNode;
     }
     
     l->tam++;
@@ -98,7 +98,7 @@ void* removeHead(Lista *l) {
         return NULL;
     }
     
-    No *node_to_remove = l->head;
+    Node *node_to_remove = l->head;
     void *data = node_to_remove->data;
     
     if (l->tam == 1) {
@@ -120,7 +120,7 @@ void* removeTail(Lista *l) {
         return NULL;
     }
     
-    No *node_to_remove = l->tail;
+    Node *node_to_remove = l->tail;
     void *data = node_to_remove->data;
     
     if (l->tam == 1) {
@@ -145,23 +145,23 @@ void* getTailInfo(Lista *l) {
     return (estaVazia(l)) ? NULL : l->tail->data;
 }
 
-No* getHeadNo(Lista *l) {
+No* getHeadNode(Lista *l) {
     return (estaVazia(l)) ? NULL : l->head;
 }
 
-No* getTailNo(Lista *l) {
+No* getTailNode(Lista *l) {
     return (estaVazia(l)) ? NULL : l->tail;
 }
 
-void* getNoInfo(No *n) {
+void* getNodeInfo(Node *n) {
     return (n == NULL) ? NULL : n->data;
 }
 
-No* vaiNoDepois(No *n) {
+No* vaiNodeDepois(Node *n) {
     return (n == NULL) ? NULL : n->next;
 }
 
-No* vaiNoAntes(No *n) {
+No* vaiNodeAntes(Node *n) {
     return (n == NULL) ? NULL : n->prev;
 }
 
@@ -170,7 +170,7 @@ void* procuraLista(Lista *l, void *key, int (*compare)(void *a, void *b)) {
         return NULL;
     }
     
-    No *current = l->head;
+    Node *current = l->head;
     while (current) {
         if (compare(current->data, key) == 0) {
             return current->data;
@@ -191,8 +191,8 @@ int removendoLista(Lista *l, int (*predicate)(void *data), void (*free_data)(voi
     }
     
     int removed = 0;
-    No *current = l->head;
-    No *next_node;
+    Node *current = l->head;
+    Node *next_node;
     
     while (current) {
         next_node = current->next;
@@ -228,8 +228,8 @@ int removendoLista(Lista *l, int (*predicate)(void *data), void (*free_data)(voi
 void limpaLista(Lista *l, void (*free_data)(void *data)) {
     if (!l) return;
     
-    No *current = l->head;
-    No *next_node;
+    Node *current = l->head;
+    Node *next_node;
     
     while (current) {
         next_node = current->next;
