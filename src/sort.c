@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "sort.h"
+#include "strdupi.h"
 
 static void mergeArrays(void* array, int esq, int meio, int dir, size_t size, ComparaFunc cmp, TrocaFunc troca);
 static void* mergeListas(void* esq, void* dir, ComparaFunc cmp, void* (*getProximo)(void*), void (*setProximo)(void*, void*));
