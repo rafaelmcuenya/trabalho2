@@ -9,10 +9,10 @@
 #include <stdlib.h>    
 #include <math.h> 
 
-struct PoligonoStruct {
+typedef struct {
     Lista* vertices; 
     int numVertices;
-};
+}PoligonoStruct;
 
 Poligono criaPoligonoVazio(void) {
     struct PoligonoStruct* p = malloc(sizeof(struct PoligonoStruct));
