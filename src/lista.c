@@ -3,17 +3,17 @@
 #include "lista.h"
 #include "strdupi.h"
 
-typedef struct no {
+typedef struct {
     void *data;          
     struct no *prev;    
     struct no *next;   
 } Node;
 
-struct lista {
+typedef struct {
     Node *head;          
     Node *tail;         
     int tam;             
-};
+}Lista;
 
 static Node* criaNode(void *data) {
     Node *novoNode = (Node*)malloc(sizeof(Node));
