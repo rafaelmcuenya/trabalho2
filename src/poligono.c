@@ -162,7 +162,7 @@ Lista* getVertices(Poligono p) {
     
     return copia;
 }
-/
+
 Lista* getSegmentos(Poligono p) {
     return getVertices(p);
 }
