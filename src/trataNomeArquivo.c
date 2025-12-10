@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <ctype.h>
+#include "strdupi.h"
 
 #ifdef _WIN32
 #include <direct.h>
