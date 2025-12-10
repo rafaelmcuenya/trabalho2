@@ -1,4 +1,3 @@
-
 #ifndef LISTA_H
 #define LISTA_H
 
@@ -57,13 +56,12 @@ void* getTailInfo(Lista *l);
    Obtém o último elemento da lista sem removê-lo.
 */
 
-No* getHeadNode(Lista *l);
+Node* getHeadNode(Lista *l);
 /*
    Obtém o primeiro nó da lista, retornando-o.
 */
 
-No* getTailNode(Lista *l);
-
+Node* getTailNode(Lista *l);
 /*
    Obtém o último nó da lista, retornando-o.
 */
@@ -73,12 +71,12 @@ void* getNodeInfo(Node *n);
    Obtém o dado armazenado em um nó específico.
 */
 
-No* vaiNodeDepois(Node *n);
+Node* vaiNodeDepois(Node *n);
 /*
    Avança para o próximo nó a partir de um nó dado, retornando tal ponteiro.
 */
 
-No* vaiNodeAntes(Node *n);
+Node* vaiNodeAntes(Node *n);
 /*
    Volta para o nó anterior a partir de um nó dado, retornando o ponteiro do nó anterior.
 */
@@ -105,7 +103,6 @@ void limpaLista(Lista *l, void (*free_data)(void *data));
 */
 
 void freeLista(Lista *l, void (*free_data)(void *data));
-
 /*
    Libera completamente a lista e seus elementos.
 */
