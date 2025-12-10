@@ -8,7 +8,7 @@
    Este módulo serve como armazenamento das formas e anteparos criados ao decorrer da execução do programa.
 */
 
-typedef struct no No;
+typedef struct no Node;
 typedef struct lista Lista;
 
 Lista* iniciaLista(void);
@@ -57,28 +57,28 @@ void* getTailInfo(Lista *l);
    Obtém o último elemento da lista sem removê-lo.
 */
 
-No* getHeadNo(Lista *l);
+No* getHeadNode(Lista *l);
 /*
    Obtém o primeiro nó da lista, retornando-o.
 */
 
-No* getTailNo(Lista *l);
+No* getTailNode(Lista *l);
 
 /*
    Obtém o último nó da lista, retornando-o.
 */
 
-void* getNoInfo(No *n);
+void* getNodeInfo(Node *n);
 /*
    Obtém o dado armazenado em um nó específico.
 */
 
-No* vaiNoDepois(No *n);
+No* vaiNodeDepois(Node *n);
 /*
    Avança para o próximo nó a partir de um nó dado, retornando tal ponteiro.
 */
 
-No* vaiNoAntes(No *n);
+No* vaiNodeAntes(Node *n);
 /*
    Volta para o nó anterior a partir de um nó dado, retornando o ponteiro do nó anterior.
 */
