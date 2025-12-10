@@ -10,9 +10,9 @@
 #include "lista.h"
 
 static int adicionaAnteparoNaLista(Anteparo anteparo, Lista lista) {
-    if (!anteparo || !lista) {
-        return 0;
-    }
+    insereTail(lista, anteparo); 
+    return 1; 
+}
 
     return insereLista(lista, anteparo);
 }
