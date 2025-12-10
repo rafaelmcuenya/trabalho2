@@ -50,6 +50,16 @@ char* getCorPLinha(Linha l);
    Como a linha possui apenas uma cor, retorna a mesma cordefinida para a linha.
 */
 
+double getXLinha(Linha l);
+/*
+   Retorna a coordenada X da âncora da linha.
+*/
+
+double getYLinha(Linha l);
+/*
+   Retorna a coordenada Y da âncora da linha.
+*/
+
 double getX1Linha(Linha l);
 /*
    Retorna a coordenada X do primeiro ponto da linha.
