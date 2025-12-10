@@ -14,9 +14,6 @@ static int adicionaAnteparoNaLista(Anteparo anteparo, Lista lista) {
     return 1; 
 }
 
-    return insereLista(lista, anteparo);
-}
-
 static void liberaAnteparoSeNecessario(Anteparo anteparo) {
     if (anteparo) {
         liberaAnteparo(anteparo);
