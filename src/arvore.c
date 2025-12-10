@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "arvore.h"
+#include "strdupi.h"
 
 typedef struct avl_node {
     void* info;             
