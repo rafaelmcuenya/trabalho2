@@ -3,7 +3,7 @@
 
 #include "forma.h"
 #include "poligono.h"
-#include "regiaovisivel.h"
+#include "visibilidade.h"
 #include "lista.h"
 #include <stdio.h>
 
