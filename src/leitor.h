@@ -5,18 +5,18 @@
 #include <stdbool.h>
 
 /*
-   O leitor é responsável por processar arquivos de comando (.geo e .qry) que definem as formas geométricas e as operações do sistema.
-   Ele coordena a criação de formas, disparadores, carregadores e a execução das operações na arena.
+   O leitor é responsável por processar o .geo e .qyr que definem as formas geométricas e as operações do sistema.
+   Ele coordena a criação de formas, anteparos e a execução das bombas.
 */
 
 void inicializarSistema(void);
 /*
-   Inicializa todos os componentes do sistema. Deve ser chamado antes de processar qualquer arquivo.
+   Inicializa todos os componentes do sistema.
 */
 
 void finalizarSistema(void);
 /*
-   Libera toda a memória alocada pelo sistema e finaliza todos os componentes. Deve ser chamado ao término da execução.
+   Libera toda a memória alocada pelo sistema e finaliza todos os componentes.
 */
 
 void abrirArquivo(FILE **f, const char *caminho);
