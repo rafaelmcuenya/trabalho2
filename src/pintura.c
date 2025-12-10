@@ -8,6 +8,7 @@
 #include "linha.h"
 #include "anteparo.h"
 #include "lista.h"
+#include "strdupi.h"
 
 static int adicionaAnteparoNaLista(Anteparo anteparo, Lista lista) {
     insereTail(lista, anteparo); 
