@@ -60,13 +60,13 @@ static int comparaFormasPorId(void* a, void* b) {
 static Forma buscaFormaPorId(Lista* lista, int id) {
     if (!lista || estaVazia(lista)) return NULL;
     
-    No* atual = getHeadNo(lista);
+    Node* atual = getHeadNode(lista);
     while (atual) {
         Forma f = (Forma)getNodeInfo(atual);
         if (f && getIdForma(f) == id) {
             return f;
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     return NULL;
 }
@@ -74,32 +74,32 @@ static Forma buscaFormaPorId(Lista* lista, int id) {
 static void removeFormaPorId(Lista* lista, int id, void (*libera)(void*)) {
     if (!lista || estaVazia(lista)) return;
     
-    No* atual = getHeadNo(lista);
-    No* anterior = NULL;
+    Node* atual = getHeadNode(lista);
+    Node* anterior = NULL;
     
     while (atual) {
         Forma f = (Forma)getNodeInfo(atual);
         if (f && getIdForma(f) == id) {
-            No* proximo = vaiNoDepois(atual);
+            Node* proximo = vaiNodeDepois(atual);
             
             if (anterior == NULL) {
                 removeHead(lista);
             } else {
                 Lista* temp = iniciaLista();
-                No* corrente = getHeadNo(lista);
+                Node* corrente = getHeadNode(lista);
                 
                 while (corrente) {
                     if (corrente != atual) {
                         insereTail(temp, getNodeInfo(corrente));
                     }
-                    corrente = vaiNoDepois(corrente);
+                    corrente = vaiNodeDepois(corrente);
                 }
                 
                 limpaLista(lista, NULL);
-                corrente = getHeadNo(temp);
+                corrente = getHeadNode(temp);
                 while (corrente) {
-                    insereTail(lista, getNoInfo(corrente));
-                    corrente = vaiNoDepois(corrente);
+                    insereTail(lista, getNodeInfo(corrente));
+                    corrente = vaiNodeDepois(corrente);
                 }
                 
                 freeLista(temp, NULL);
@@ -113,7 +113,7 @@ static void removeFormaPorId(Lista* lista, int id, void (*libera)(void*)) {
         }
         
         anterior = atual;
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
 }
 
@@ -123,10 +123,10 @@ static int removeFormasPorPredicado(Lista* lista, int (*predicado)(void* data), 
     int removidas = 0;
     
     Lista* temp = iniciaLista();
-    No* atual = getHeadNo(lista);
+    Node* atual = getHeadNode(lista);
     
     while (atual) {
-        void* data = getNoInfo(atual);
+        void* data = getNodeInfo(atual);
         if (data && (!predicado || !predicado(data))) {
             insereTail(temp, data);
         } else {
@@ -135,14 +135,14 @@ static int removeFormasPorPredicado(Lista* lista, int (*predicado)(void* data), 
                 libera(data);
             }
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     limpaLista(lista, NULL);
-    atual = getHeadNo(temp);
+    atual = getHeadNode(temp);
     while (atual) {
-        insereTail(lista, getNoInfo(atual));
-        atual = vaiNoDepois(atual);
+        insereTail(lista, getNodeInfo(atual));
+        atual = vaiNodeDepois(atual);
     }
     
     freeLista(temp, NULL);
@@ -257,16 +257,16 @@ static void cmdTransformaAnteparo(int i, int j, char direcao) {
                 removeFormaPorId(formas, id, (void (*)(void*))freeForma);
                 totalFormasDestruidas++;
                 
-                No* atual = getHeadNo(listaAnteparosLocais);
+                Node* atual = getHeadNode(listaAnteparosLocais);
                 while (atual) {
-                    Anteparo a = (Anteparo)getNoInfo(atual);
+                    Anteparo a = (Anteparo)getNodeInfo(atual);
                     if (a) {
                         insereTail(anteparos, a);
                         totalAnteparosCriados++;
                         
                         txtA(id, id, direcao, forma, a);
                     }
-                    atual = vaiNoDepois(atual);
+                    atual = vaiNodeDepois(atual);
                 }
             } else {
                 printf("[AVISO] Falha ao transformar forma %d em anteparo\n", id);
@@ -318,10 +318,10 @@ static void cmdBombaDestruicao(double x, double y, const char* sfx) {
     
     Lista* formasDestruidas = iniciaLista();
     
-    No* atual = getHeadNo(formas);
+    Node* atual = getHeadNode(formas);
     while (atual) {
-        Forma forma = (Forma)getNoInfo(atual);
-        No* proximo = vaiNoDepois(atual); 
+        Forma forma = (Forma)getNodeInfo(atual);
+        Node* proximo = vaiNodeDepois(atual); 
         
         if (forma) {
             Ponto centro = criaPonto(getXForma(forma), getYForma(forma));
@@ -372,9 +372,9 @@ static void cmdBombaPintura(double x, double y, const char* cor, const char* sfx
     
     Lista* formasPintadas = iniciaLista();
     
-    No* atual = getHeadNo(formas);
+    Node* atual = getHeadNode(formas);
     while (atual) {
-        Forma forma = (Forma)getNoInfo(atual);
+        Forma forma = (Forma)getNodeInfo(atual);
         
         if (forma) {
             Ponto centro = criaPonto(getXForma(forma), getYForma(forma));
@@ -426,7 +426,7 @@ static void cmdBombaPintura(double x, double y, const char* cor, const char* sfx
             
             liberaPonto(centro);
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     txtP(x, y, cor, sfx, formasPintadas, regiaoVisivel);
@@ -463,9 +463,9 @@ static void cmdBombaClonagem(double x, double y, double dx, double dy, const cha
     Lista* formasOriginais = iniciaLista();
     Lista* clones = iniciaLista();
     
-    No* atual = getHeadNo(formas);
+    Node* atual = getHeadNode(formas);
     while (atual) {
-        Forma forma = (Forma)getNoInfo(atual);
+        Forma forma = (Forma)getNodeInfo(atual);
         
         if (forma) {
             Ponto centro = criaPonto(getXForma(forma), getYForma(forma));
@@ -476,12 +476,12 @@ static void cmdBombaClonagem(double x, double y, double dx, double dy, const cha
             
             liberaPonto(centro);
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
-    atual = getHeadNo(formasOriginais);
+    atual = getHeadNode(formasOriginais);
     while (atual) {
-        Forma forma = (Forma)getNoInfo(atual);
+        Forma forma = (Forma)getNodeInfo(atual);
         
         if (forma) {
             int idOriginal = getIdForma(forma);
@@ -537,7 +537,7 @@ static void cmdBombaClonagem(double x, double y, double dx, double dy, const cha
                 totalFormasCriadas++;
             }
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     txtCln(x, y, dx, dy, sfx, formasOriginais, clones);
