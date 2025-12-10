@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "ponto.h"
 #include "anteparo.h"
+#include <math.h>
 
 /*
    Este TAD cuida de quaisquer operações que envolvam a área da bomba
