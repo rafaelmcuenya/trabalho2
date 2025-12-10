@@ -50,13 +50,13 @@ int getTamLista(Lista *l) {
     return (l == NULL) ? 0 : l->tam;
 }
 
-void insereHead(Lista *l, void *new_data) {
-    if (!l || !new_data) {
+void insereHead(Lista *l, void *novaInfo) {
+    if (!l || !novaInfo) {
         fprintf(stderr, "Erro: parâmetros inválidos em insereHead\n");
         return;
     }
     
-    No *novoNo = criaNo(new_data);
+    No *novoNo = criaNo(novaInfo);
     if (!novoNo) return;
     
     if (estaVazia(l)) {
@@ -71,13 +71,13 @@ void insereHead(Lista *l, void *new_data) {
     l->tam++;
 }
 
-void insereTail(Lista *l, void *new_data) {
-    if (!l || !new_data) {
+void insereTail(Lista *l, void *novaInfo) {
+    if (!l || !novaInfo) {
         fprintf(stderr, "Erro: parâmetros inválidos em insereTail\n");
         return;
     }
     
-    No *novoNo = criaNo(new_data);
+    No *novoNo = criaNo(novaInfo);
     if (!novoNo) return;
     
     if (estaVazia(l)) {
