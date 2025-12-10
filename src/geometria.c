@@ -6,6 +6,7 @@
 #include "geometria.h"
 #include "ponto.h"
 #include "anteparo.h"
+#include "strdupi.h"
 
 #define EPSILON 1e-12
 #define PI 3.14159265358979323846
