@@ -7,6 +7,7 @@
 #include "geometria.h"
 #include "sort.h"
 #include "lista.h"
+#include "strdupi.h"
 
 #define EPSILON 1e-12
 #define PI 3.14159265358979323846
