@@ -152,6 +152,22 @@ Linha clonaLinha(Linha l, int novoId){
     return clone;
 }
 
+double getXLinha(Linha l) {
+    if (!l) return -1.0;
+    LinhaStruct* linha = (LinhaStruct*)l;
+    if (linha->x1 < linha->x2) return linha->x1;
+    if (linha->x1 > linha->x2) return linha->x2;
+    return (linha->y1 < linha->y2) ? linha->x1 : linha->x2;
+}
+
+double getYLinha(Linha l) {
+    if (!l) return -1.0;
+    LinhaStruct* linha = (LinhaStruct*)l;
+    if (linha->x1 < linha->x2) return linha->y1;
+    if (linha->x1 > linha->x2) return linha->y2;
+    return (linha->y1 < linha->y2) ? linha->y1 : linha->y2;
+}
+
 double getX1Linha(Linha l){
     if (!l){
         fprintf(stderr, "Erro: linha NULL em getX1Linha\n");
