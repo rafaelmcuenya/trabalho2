@@ -1,176 +1,167 @@
 #ifndef POLIGONO_H
 #define POLIGONO_H
 
-#include "ponto.h"
+#include <stdio.h>
+#include <stdbool.h>
 #include "lista.h"
+#include "ponto.h"
+#include "anteparo.h"
+#include "forma.h"
 
 /*
-   Um polígono é uma figura geométrica plana definida por uma sequência fechada de segmentos de reta.
+   Um polígono é uma figura geométrica composta por um conjunto ordenado de vértices, conectados entre si por segmentos de reta, formando uma cadeia fechada.
+   O polígono deve conter, no mínimo, três vértices para ser considerado válido.
 */
 
 typedef void* Poligono;
 
 typedef enum {
-    POLIGONO_SIMPLES,    
-    POLIGONO_CONVEXO,    
-    POLIGONO_ESTRELA      
+    POLIGONO_SIMPLES,
+    POLIGONO_CONVEXO,
+    POLIGONO_ESTRELA
 } TipoPoligono;
 
 Poligono criaPoligonoVazio(void);
 /*
-   Cria um polígono vazio (sem vértices).
+   Cria um polígono vazio, sem vértices. Deve ser preenchido posteriormente com a adição de novos vértices.
 */
 
 Poligono criaPoligonoDeLista(Lista* vertices);
 /*
-   Cria um polígono a partir de uma lista de pontos (vértices).
+   Cria um polígono copiando todos os pontos de uma lista existente.
+   A lista deve conter pelo menos três pontos para formar um polígono válido.
 */
 
 void liberaPoligono(Poligono p);
 /*
-   Libera toda a memória associada ao polígono.
+   Libera toda a memória associada ao polígono, incluindo todos os vértices armazenados.
 */
 
 void adicionaVerticePoligono(Poligono p, Ponto vertice);
 /*
-   Adiciona um vértice ao final da lista de vértices do polígono.
-*/
-
-void adicionaVerticeComDados(Poligono p, Ponto vertice, int id, void* dadoExtra);
-/*
-   Adiciona um vértice com dados adicionais.
+   Adiciona um novo vértice ao final da lista de vértices do polígono.
 */
 
 void removeVerticePoligono(Poligono p, int indice);
 /*
-   Remove o vértice na posição especificada,e reconecta as pontas.
+   Remove o vértice na posição indicada, caso o índice seja válido.
 */
 
 int getNumVertices(Poligono p);
 /*
-   Retorna o número de vértices do polígono.
+   Retorna o número total de vértices do polígono.
 */
 
 int getNumSegmentos(Poligono p);
 /*
-   Retorna o número de segmentos/arestas do polígono.
+   Retorna o número de segmentos do polígono.  
 */
 
 Ponto getVertice(Poligono p, int indice);
 /*
-   Retorna o vértice na posição especificada.
+   Retorna uma cópia do vértice na posição indicada.
 */
 
 void* getSegmento(Poligono p, int indice);
 /*
-   Retorna o segmento na posição especificada.
+   Retorna o vértice correspondente ao segmento indicado.
 */
 
 Lista* getVertices(Poligono p);
 /*
-   Retorna uma lista com todos os vértices do polígono.
+   Retorna uma lista nova contendo cópias de todos os vértices do polígono.
 */
 
 Lista* getSegmentos(Poligono p);
 /*
-   Retorna uma lista com todos os segmentos(arestas) do polígono.
+   Retorna os segmentos do polígono. 
 */
 
 double calculaAreaPoligono(Poligono p);
 /*
-   Calcula a área do polígono.
-
+   Calcula a área do polígono usando a fórmula do polígono simples (Shoelace).
+   Retorna 0 caso o polígono não seja válido.
 */
 
 double calculaPerimetro(Poligono p);
 /*
-   Calcula o perímetro do polígono.
+   Calcula o perímetro do polígono somando o comprimento de todos os lados.
 */
 
 bool pontoDentroPoligono(Poligono p, Ponto ponto);
 /*
-   Verifica se um ponto está dentro do polígono.
-   Retorna 1 se o ponto estiver no interior ou na borda.
+   Determina se um ponto está contido no interior do polígono usando o método
+   "ray casting".
 */
 
 bool poligonosSeInterceptam(Poligono p1, Poligono p2);
 /*
-   Verifica se dois polígonos se interceptam.
+   Verifica se dois polígonos possuem interseção entre si.
 */
 
 bool poligonoContemPoligono(Poligono externo, Poligono interno);
 /*
-   Verifica se o polígono externo contém completamente o interno.
-*/
-
-Poligono interseccaoPoligonos(Poligono p1, Poligono p2);
-/*
-   Calcula a interseção de dois polígonos.
-   Retorna novo polígono representando a área comum ou NULL caso não houver.
-*/
-
-Poligono uniaoPoligonos(Poligono p1, Poligono p2);
-/*
-   Calcula a união de dois polígonos.
-   Retorna novo polígono representando a área total.
-*/
-
-Poligono diferencaPoligonos(Poligono p1, Poligono p2);
-/*
-   Calcula a diferença de áreas p1 - p2 .
-   Retorna novo polígono.
+   Verifica se todos os vértices de um polígono estão contidos dentro de outro.
 */
 
 TipoPoligono classificaPoligono(Poligono p);
 /*
-   Classifica o polígono como simples, convexo ou estrela.
+   Classifica um polígono em simples, convexo ou estrela.
 */
 
 bool ehPoligonoSimples(Poligono p);
 /*
-   Verifica se o polígono é simples (sem auto-interseções).
+   Verifica se o polígono é simples.
 */
 
 bool ehPoligonoConvexo(Poligono p);
 /*
-   Verifica se o polígono é convexo.
+   Verifica se o polígono é convexo utilizando o sinal do produto vetorial.
 */
 
 bool ehPoligonoEstrela(Poligono p);
 /*
-   Verifica se o polígono é em forma de estrela.
+   Verifica se o polígono é do tipo estrela.
 */
 
 Poligono criaPoligonoConvexo(Lista* pontos);
 /*
-   Cria o fecho convexo de um conjunto de pontos.
-   Retorna polígono convexo que envolve todos os pontos.
-*/
-
-void* triangulaPoligono(Poligono p);
-/*
-   Triangula o polígono (divide em triângulos).
-   Retorna lista de triângulos ou polígono especial.
+   Cria um polígono convexo utilizando a lista de pontos fornecida.
 */
 
 void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBorda);
 /*
-   Desenha o polígono em um arquivo SVG.
-*/
-
-Poligono criaPoligonoDeForma(int tipoForma, void* forma);
-/*
-   Cria polígono a partir de uma forma geométrica (círculo, retângulo, texto).
+   Desenha o polígono em um arquivo SVG utilizando as coordenadas dos seus vértices.
 */
 
 Poligono transformaAnteparoEmPoligono(Anteparo a);
 /*
-   Converte um anteparo (segmento) em um polígono degenerado (segmento como polígono).
+   Converte um anteparo em um polígono de dois vértices.
 */
 
 Lista* poligonosDeSegmentos(Lista* segmentos);
 /*
-   Converte uma lista de segmentos em uma lista de polígonos, onde segmentos conectados formam polígonos.
+   Converte uma lista de anteparos em uma lista de polígonos gerados a partir deles.
 */
 
-#endif 
+Poligono interseccaoPoligonos(Poligono p1, Poligono p2);
+/*
+   Calcula a interseção de dois polígonos caso um esteja completamente contido no outro.
+*/
+
+Poligono uniaoPoligonos(Poligono p1, Poligono p2);
+/*
+   Calcula a união entre dois polígonos, juntando todos os seus vértices.
+*/
+
+Poligono diferencaPoligonos(Poligono p1, Poligono p2);
+/*
+   Retorna a diferença entre dois polígonos caso não se interceptem.
+*/
+
+Poligono criaPoligonoDeForma(int tipoForma, void* forma);
+/*
+   Cria um polígono aproximado a partir de uma forma geométrica genérica.
+*/
+
+#endif
