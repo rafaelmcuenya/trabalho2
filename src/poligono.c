@@ -7,7 +7,10 @@
 #include <math.h>
 #include "poligono.h" 
 #include <stdlib.h>    
-#include <math.h> 
+#include <math.h>
+#include <float.h>
+
+#define EPSILON 1e-12
 
 typedef struct {
     Lista* vertices; 
@@ -24,7 +27,7 @@ Poligono criaPoligonoVazio(void) {
 }
 
 Poligono criaPoligonoDeLista(Lista* vertices) {
-    if (!vertices || getTamLista(vertices) < 3) return NULL;
+    if (!vertices || getTamLista(vertices) < 2) return NULL;
     
     struct PoligonoStruct* p = malloc(sizeof(struct PoligonoStruct));
     if (!p) return NULL;
@@ -40,6 +43,12 @@ Poligono criaPoligonoDeLista(Lista* vertices) {
             p->numVertices++;
         }
         atual = vaiNoDepois(atual);
+    }
+    
+    if (p->numVertices < 2) {
+        freeLista(p->vertices, NULL);
+        free(p);
+        return NULL;
     }
     
     return (Poligono)p;
@@ -175,7 +184,9 @@ double calculaAreaPoligono(Poligono p) {
     
     struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
     
-    if (poly->numVertices < 3) return 0.0;
+    if (poly->numVertices < 3) {
+        return 0.0;
+    }
     
     double area = 0.0;
     No* atual = getHeadNo(poly->vertices);
@@ -224,7 +235,11 @@ double calculaPerimetro(Poligono p) {
         if (prox) {
             p2 = (Ponto)getNoInfo(prox);
         } else {
-            p2 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+            if (poly->numVertices >= 3) {
+                p2 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+            } else {
+                break;
+            }
         }
         
         if (p1 && p2) {
@@ -244,7 +259,34 @@ bool pontoDentroPoligono(Poligono p, Ponto ponto) {
     
     struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
     
-    if (poly->numVertices < 3) return false;
+    if (poly->numVertices < 2) return false;
+    
+    if (poly->numVertices == 2) {
+        Ponto p1 = getVertice(p, 0);
+        Ponto p2 = getVertice(p, 1);
+        
+        if (!p1 || !p2) {
+            if (p1) liberaPonto(p1);
+            if (p2) liberaPonto(p2);
+            return false;
+        }
+        
+        double px = getXPonto(ponto);
+        double py = getYPonto(ponto);
+        double x1 = getXPonto(p1);
+        double y1 = getYPonto(p1);
+        double x2 = getXPonto(p2);
+        double y2 = getYPonto(p2);
+        
+        liberaPonto(p1);
+        liberaPonto(p2);
+        
+        double cross = (px - x1) * (y2 - y1) - (py - y1) * (x2 - x1);
+        if (fabs(cross) > EPSILON) return false;
+        
+        return (px >= fmin(x1, x2) - EPSILON && px <= fmax(x1, x2) + EPSILON &&
+                py >= fmin(y1, y2) - EPSILON && py <= fmax(y1, y2) + EPSILON);
+    }
     
     double px = getXPonto(ponto);
     double py = getYPonto(ponto);
@@ -270,8 +312,8 @@ bool pontoDentroPoligono(Poligono p, Ponto ponto) {
             double y2 = getYPonto(p2);
             
             if ((px - x1) * (y2 - y1) == (py - y1) * (x2 - x1) &&
-                px >= fmin(x1, x2) && px <= fmax(x1, x2) &&
-                py >= fmin(y1, y2) && py <= fmax(y1, y2)) {
+                px >= fmin(x1, x2) - EPSILON && px <= fmax(x1, x2) + EPSILON &&
+                py >= fmin(y1, y2) - EPSILON && py <= fmax(y1, y2) + EPSILON) {
                 return true;
             }
             
@@ -300,7 +342,6 @@ bool poligonosSeInterceptam(Poligono p1, Poligono p2) {
         }
         atual = vaiNoDepois(atual);
     }
-    
     struct PoligonoStruct* poly2 = (struct PoligonoStruct*)p2;
     atual = getHeadNo(poly2->vertices);
     
@@ -310,6 +351,10 @@ bool poligonosSeInterceptam(Poligono p1, Poligono p2) {
             return true;
         }
         atual = vaiNoDepois(atual);
+    }
+    
+    if (poly1->numVertices >= 2 && poly2->numVertices >= 2) {
+   
     }
     
     return false;
@@ -334,11 +379,30 @@ bool poligonoContemPoligono(Poligono externo, Poligono interno) {
 
 TipoPoligono classificaPoligono(Poligono p) {
     if (!p) return POLIGONO_SIMPLES;
+    
+    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    
+    if (poly->numVertices < 3) {
+        return POLIGONO_SIMPLES;
+    }
+    
+    if (ehPoligonoConvexo(p)) {
+        return POLIGONO_CONVEXO;
+    } else if (ehPoligonoEstrela(p)) {
+        return POLIGONO_ESTRELA;
+    }
+    
     return POLIGONO_SIMPLES;
 }
 
 bool ehPoligonoSimples(Poligono p) {
-    return (p != NULL);
+    if (!p) return false;
+    
+    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    
+    if (poly->numVertices < 3) return true;
+    
+    return true;
 }
 
 bool ehPoligonoConvexo(Poligono p) {
@@ -390,6 +454,12 @@ bool ehPoligonoConvexo(Poligono p) {
 }
 
 bool ehPoligonoEstrela(Poligono p) {
+    if (!p) return false;
+    
+    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    
+    if (poly->numVertices < 3) return false;
+    
     return ehPoligonoConvexo(p);
 }
 
@@ -402,7 +472,21 @@ void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBo
     
     struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
     
-    if (poly->numVertices < 3) return;
+    if (poly->numVertices < 2) return;
+    
+    if (poly->numVertices == 2) {
+        Ponto p1 = getVertice(p, 0);
+        Ponto p2 = getVertice(p, 1);
+        
+        if (p1 && p2) {
+            fprintf(svgFile, "<line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"%s\" stroke-width=\"1\"/>\n",
+            getXPonto(p1), getYPonto(p1), getXPonto(p2), getYPonto(p2), corBorda ? corBorda : "black");
+        }
+        
+        if (p1) liberaPonto(p1);
+        if (p2) liberaPonto(p2);
+        return;
+    }
     
     fprintf(svgFile, "<polygon points=\"");
     
@@ -415,35 +499,56 @@ void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBo
         atual = vaiNoDepois(atual);
     }
     
-    Ponto primeiro = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+    Ponto primeiro = getVertice(p, 0);
     if (primeiro) {
         fprintf(svgFile, "%.2f,%.2f", getXPonto(primeiro), getYPonto(primeiro));
+        liberaPonto(primeiro);
     }
     
-    fprintf(svgFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n",
-            corPreench ? corPreench : "none",
-            corBorda ? corBorda : "black");
+    fprintf(svgFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n",corPreench ? corPreench : "none", corBorda ? corBorda : "black");
 }
 
 Poligono transformaAnteparoEmPoligono(Anteparo a) {
     if (!a) return NULL;
     
-    Poligono p = criaPoligonoVazio();
-    if (!p) return NULL;
-    
     double x1 = getX1Anteparo(a);
     double y1 = getY1Anteparo(a);
     double x2 = getX2Anteparo(a);
     double y2 = getY2Anteparo(a);
+    Poligono p = criaPoligonoVazio();
+    if (!p) return NULL;
     
     Ponto p1 = criaPonto(x1, y1);
     Ponto p2 = criaPonto(x2, y2);
+    double mx = (x1 + x2) / 2.0;
+    double my = (y1 + y2) / 2.0;
+    double dx = y2 - y1;
+    double dy = x1 - x2;
+    double length = sqrt(dx*dx + dy*dy);
+    if (length > 0) {
+        dx = dx / length * 0.1; 
+        dy = dy / length * 0.1;
+    } else {
+        dx = 0.1;
+        dy = 0.1;
+    }
     
-    if (p1) adicionaVerticePoligono(p, p1);
-    if (p2) adicionaVerticePoligono(p, p2);
+    Ponto p3 = criaPonto(mx + dx, my + dy);
     
-    if (p1) liberaPonto(p1);
-    if (p2) liberaPonto(p2);
+    if (p1) {
+        adicionaVerticePoligono(p, p1);
+        liberaPonto(p1);
+    }
+    
+    if (p2) {
+        adicionaVerticePoligono(p, p2);
+        liberaPonto(p2);
+    }
+    
+    if (p3) {
+        adicionaVerticePoligono(p, p3);
+        liberaPonto(p3);
+    }
     
     return p;
 }
@@ -469,14 +574,25 @@ Lista* poligonosDeSegmentos(Lista* segmentos) {
     return poligonos;
 }
 
-
 Poligono interseccaoPoligonos(Poligono p1, Poligono p2) {
-    if (poligonoContemPoligono(p1, p2)) return criaPoligonoDeLista(getVertices(p2));
-    if (poligonoContemPoligono(p2, p1)) return criaPoligonoDeLista(getVertices(p1));
+    if (!p1 || !p2) return NULL;
+    
+    if (poligonoContemPoligono(p1, p2)) {
+        return criaPoligonoDeLista(getVertices(p2));
+    }
+    
+    if (poligonoContemPoligono(p2, p1)) {
+        return criaPoligonoDeLista(getVertices(p1));
+    }
+    
     return NULL;
 }
 
 Poligono uniaoPoligonos(Poligono p1, Poligono p2) {
+    if (!p1 && !p2) return NULL;
+    if (!p1) return criaPoligonoDeLista(getVertices(p2));
+    if (!p2) return criaPoligonoDeLista(getVertices(p1));
+    
     Lista* todos = getVertices(p1);
     Lista* verts2 = getVertices(p2);
     
@@ -498,9 +614,13 @@ Poligono uniaoPoligonos(Poligono p1, Poligono p2) {
 }
 
 Poligono diferencaPoligonos(Poligono p1, Poligono p2) {
+    if (!p1) return NULL;
+    if (!p2) return criaPoligonoDeLista(getVertices(p1));
+    
     if (!poligonosSeInterceptam(p1, p2)) {
         return criaPoligonoDeLista(getVertices(p1));
     }
+    
     return NULL;
 }
 
@@ -580,6 +700,14 @@ Poligono criaPoligonoDeForma(int tipoForma, void* forma) {
             if (p1) adicionaVerticePoligono(p, p1);
             if (p2) adicionaVerticePoligono(p, p2);
             
+            double mx = (x1 + x2) / 2.0;
+            double my = (y1 + y2) / 2.0;
+            Ponto p3 = criaPonto(mx + 0.1, my + 0.1);
+            if (p3) {
+                adicionaVerticePoligono(p, p3);
+                liberaPonto(p3);
+            }
+            
             if (p1) liberaPonto(p1);
             if (p2) liberaPonto(p2);
             
@@ -625,6 +753,14 @@ Poligono criaPoligonoDeForma(int tipoForma, void* forma) {
             
             if (p1) adicionaVerticePoligono(p, p1);
             if (p2) adicionaVerticePoligono(p, p2);
+            
+            double mx = (x1 + x2) / 2.0;
+            Ponto p3 = criaPonto(mx, y + 5.0);
+            if (p3) {
+                adicionaVerticePoligono(p, p3);
+                liberaPonto(p3);
+            }
+            
             if (p1) liberaPonto(p1);
             if (p2) liberaPonto(p2);
             
