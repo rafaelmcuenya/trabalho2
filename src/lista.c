@@ -26,7 +26,7 @@ static Node* criaNode(void *data) {
     novoNode->prev = NULL;
     novoNode->next = NULL;
     
-    return novoNo;
+    return novoNode;
 }
 
 Lista* iniciaLista(void) {
@@ -57,14 +57,14 @@ void insereHead(Lista *l, void *novaInfo) {
         return;
     }
     
-    Node *novoNode = criaNo(novaInfo);
+    Node *novoNode = criaNode(novaInfo);
     if (!novoNode) return;
     
     if (estaVazia(l)) {
         l->head = novoNode;
         l->tail = novoNode;
     } else {
-        novoNo->next = l->head;
+        novoNode->next = l->head;
         l->head->prev = novoNode;
         l->head = novoNode;
     }
@@ -78,14 +78,14 @@ void insereTail(Lista *l, void *novaInfo) {
         return;
     }
     
-    Node *novoNode = criaNo(novaInfo);
+    Node *novoNode = criaNode(novaInfo);
     if (!novoNode) return;
     
     if (estaVazia(l)) {
         l->head = novoNode;
         l->tail = novoNode;
     } else {
-        novoNo->prev = l->tail;
+        novoNode->prev = l->tail;
         l->tail->next = novoNode;
         l->tail = novoNode;
     }
@@ -145,11 +145,11 @@ void* getTailInfo(Lista *l) {
     return (estaVazia(l)) ? NULL : l->tail->data;
 }
 
-No* getHeadNode(Lista *l) {
+Node* getHeadNode(Lista *l) {
     return (estaVazia(l)) ? NULL : l->head;
 }
 
-No* getTailNode(Lista *l) {
+Node* getTailNode(Lista *l) {
     return (estaVazia(l)) ? NULL : l->tail;
 }
 
@@ -157,11 +157,11 @@ void* getNodeInfo(Node *n) {
     return (n == NULL) ? NULL : n->data;
 }
 
-No* vaiNodeDepois(Node *n) {
+Node* vaiNodeDepois(Node *n) {
     return (n == NULL) ? NULL : n->next;
 }
 
-No* vaiNodeAntes(Node *n) {
+Node* vaiNodeAntes(Node *n) {
     return (n == NULL) ? NULL : n->prev;
 }
 
