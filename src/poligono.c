@@ -5,6 +5,9 @@
 #include "anteparo.h"
 #include "forma.h"
 #include <math.h>
+#include "poligono.h" 
+#include <stdlib.h>    
+#include <math.h> 
 
 struct PoligonoStruct {
     Lista* vertices; 
