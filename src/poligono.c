@@ -88,34 +88,32 @@ void removeVerticePoligono(Poligono p, int indice) {
     
     if (indice >= poly->numVertices) return;
     
+    Lista* novaLista = iniciaLista();
+    if (!novaLista) return;
+    
     Node* atual = getHeadNode(poly->vertices);
     int i = 0;
     
-    while (atual && i < indice) {
+    while (atual) {
+        if (i != indice) {
+            Ponto ponto = (Ponto)getNodeInfo(atual);
+            if (ponto) {
+                insereTail(novaLista, clonaPonto(ponto));
+            }
+        } else {
+            Ponto ponto = (Ponto)getNodeInfo(atual);
+            if (ponto) {
+                liberaPonto(ponto);
+            }
+        }
+        
         atual = vaiNodeDepois(atual);
         i++;
     }
     
-    if (atual) {
-        Ponto pt = (Ponto)getNodeInfo(atual);
-        if (pt) liberaPonto(pt);
-        
-        if (atual->prev) {
-            atual->prev->next = atual->next;
-        } else {
-            poly->vertices->head = atual->next;
-        }
-        
-        if (atual->next) {
-            atual->next->prev = atual->prev;
-        } else {
-            poly->vertices->tail = atual->prev;
-        }
-        
-        free(atual);
-        poly->vertices->tam--;
-        poly->numVertices--;
-    }
+    freeLista(poly->vertices, NULL);
+    poly->vertices = novaLista;
+    poly->numVertices--;
 }
 
 int getNumVertices(Poligono p) {
