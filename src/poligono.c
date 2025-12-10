@@ -9,6 +9,7 @@
 #include <stdlib.h>    
 #include <math.h>
 #include <float.h>
+#include "strdupi.h"
 
 #define EPSILON 1e-12
 
