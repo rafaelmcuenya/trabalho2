@@ -1,5 +1,3 @@
-[file name]: ponto.c
-[file content begin]
 #include <stdlib.h>
 #include <math.h>
 #include "ponto.h"
