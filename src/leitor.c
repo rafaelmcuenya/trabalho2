@@ -62,7 +62,7 @@ static Forma buscaFormaPorId(Lista* lista, int id) {
     
     No* atual = getHeadNo(lista);
     while (atual) {
-        Forma f = (Forma)getNoInfo(atual);
+        Forma f = (Forma)getNodeInfo(atual);
         if (f && getIdForma(f) == id) {
             return f;
         }
@@ -78,7 +78,7 @@ static void removeFormaPorId(Lista* lista, int id, void (*libera)(void*)) {
     No* anterior = NULL;
     
     while (atual) {
-        Forma f = (Forma)getNoInfo(atual);
+        Forma f = (Forma)getNodeInfo(atual);
         if (f && getIdForma(f) == id) {
             No* proximo = vaiNoDepois(atual);
             
@@ -90,7 +90,7 @@ static void removeFormaPorId(Lista* lista, int id, void (*libera)(void*)) {
                 
                 while (corrente) {
                     if (corrente != atual) {
-                        insereTail(temp, getNoInfo(corrente));
+                        insereTail(temp, getNodeInfo(corrente));
                     }
                     corrente = vaiNoDepois(corrente);
                 }
