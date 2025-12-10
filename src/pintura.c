@@ -10,7 +10,7 @@
 #include "lista.h"
 #include "strdupi.h"
 
-static int adicionaAnteparoNaLista(Anteparo anteparo, Lista lista) {
+static int adicionaAnteparoNaLista(Anteparo anteparo, Lista* lista) {
     insereTail(lista, anteparo); 
     return 1; 
 }
@@ -21,7 +21,7 @@ static void liberaAnteparoSeNecessario(Anteparo anteparo) {
     }
 }
 
-int pintaRetangulo(Retangulo retangulo, int ids[4], Lista lista) {
+int pintaRetangulo(Retangulo retangulo, int ids[4], Lista* lista) {
     if (!retangulo || !lista) {
         fprintf(stderr, "Erro: parâmetros inválidos em pintaRetangulo\n");
         return 0;
@@ -90,7 +90,7 @@ int pintaRetangulo(Retangulo retangulo, int ids[4], Lista lista) {
     return sucesso;
 }
 
-int pintaLinha(Linha linha, int novoId, Lista lista) {
+int pintaLinha(Linha linha, int novoId, Lista* lista) {
     if (!linha || !lista) {
         fprintf(stderr, "Erro: parâmetros inválidos em pintaLinha\n");
         return 0;
@@ -129,7 +129,7 @@ int pintaLinha(Linha linha, int novoId, Lista lista) {
     return 1;
 }
 
-int pintaTexto(Texto texto, int novoId, Lista lista) {
+int pintaTexto(Texto texto, int novoId, Lista* lista) {
     if (!texto || !lista) {
         fprintf(stderr, "Erro: parâmetros inválidos em pintaTexto\n");
         return 0;
@@ -197,7 +197,7 @@ int pintaTexto(Texto texto, int novoId, Lista lista) {
     return 1;
 }
 
-int pintaCirculo(Circulo circulo, char direcao, int novoId, Lista lista) {
+int pintaCirculo(Circulo circulo, char direcao, int novoId, Lista* lista) {
     if (!circulo || !lista) {
         fprintf(stderr, "Erro: parâmetros inválidos em pintaCirculo\n");
         return 0;
