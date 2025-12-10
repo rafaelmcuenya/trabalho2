@@ -1,9 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "circulo.h"
+#include "retangulo.h"
+#include "linha.h"
+#include "texto.h"
+#include "anteparo.h"
+#include "forma.h"
 #include <math.h>
-#include "poligono.h"
-#include "ponto.h"
-#include "lista.h"
 
 struct PoligonoStruct {
     Lista* vertices; 
@@ -501,6 +502,140 @@ Poligono diferencaPoligonos(Poligono p1, Poligono p2) {
 }
 
 Poligono criaPoligonoDeForma(int tipoForma, void* forma) {
-    /* Stub - depende dos TADs específicos de formas */
-    return criaPoligonoVazio();
+    if (!forma) return criaPoligonoVazio();
+    
+    Forma f = (Forma)forma; 
+    TipoForma tipo = getTipoForma(f);
+    
+    switch (tipo) {
+        case Tc: { 
+            Circulo c = getCirculoFromForma(f);
+            if (!c) return criaPoligonoVazio();
+            
+            double x = getXCirculo(c);
+            double y = getYCirculo(c);
+            double r = getRaioCirculo(c);
+            
+            Poligono p = criaPoligonoVazio();
+            if (!p) return NULL;
+            
+            for (int i = 0; i < 32; i++) {
+                double angle = 2.0 * M_PI * i / 32.0;
+                double px = x + r * cos(angle);
+                double py = y + r * sin(angle);
+                Ponto pt = criaPonto(px, py);
+                if (pt) {
+                    adicionaVerticePoligono(p, pt);
+                    liberaPonto(pt);
+                }
+            }
+            return p;
+        }
+        
+        case Tr: { 
+            Retangulo r = getRetanguloFromForma(f);
+            if (!r) return criaPoligonoVazio();
+            
+            double x = getXRetangulo(r);
+            double y = getYRetangulo(r);
+            double w = getLarguraRetangulo(r);
+            double h = getAlturaRetangulo(r);
+            
+            Poligono p = criaPoligonoVazio();
+            if (!p) return NULL;
+            
+            Ponto pts[4];
+            pts[0] = criaPonto(x, y);
+            pts[1] = criaPonto(x + w, y);
+            pts[2] = criaPonto(x + w, y + h);
+            pts[3] = criaPonto(x, y + h);
+            
+            for (int i = 0; i < 4; i++) {
+                if (pts[i]) {
+                    adicionaVerticePoligono(p, pts[i]);
+                    liberaPonto(pts[i]);
+                }
+            }
+            return p;
+        }
+        
+        case Tl: { 
+            Linha l = getLinhaFromForma(f);
+            if (!l) return criaPoligonoVazio();
+            
+            double x1 = getX1Linha(l);
+            double y1 = getY1Linha(l);
+            double x2 = getX2Linha(l);
+            double y2 = getY2Linha(l);
+            
+            Poligono p = criaPoligonoVazio();
+            if (!p) return NULL;
+            
+            Ponto p1 = criaPonto(x1, y1);
+            Ponto p2 = criaPonto(x2, y2);
+            
+            if (p1) adicionaVerticePoligono(p, p1);
+            if (p2) adicionaVerticePoligono(p, p2);
+            
+            if (p1) liberaPonto(p1);
+            if (p2) liberaPonto(p2);
+            
+            return p;
+        }
+        
+        case Tt: { 
+            Texto t = getTextoFromForma(f);
+            if (!t) return criaPoligonoVazio();
+            
+            double x = getXTexto(t);
+            double y = getYTexto(t);
+            char ancora = getAncoraTexto(t);
+            int numChars = getNumCaracteresTexto(t);
+            
+            if (numChars <= 0) return criaPoligonoVazio();
+            
+            double comp = 10.0 * numChars; 
+            double x1, x2;
+            
+            switch (ancora) {
+                case 'i': 
+                    x1 = x;
+                    x2 = x + comp;
+                    break;
+                case 'f': 
+                    x1 = x - comp;
+                    x2 = x;
+                    break;
+                case 'm': 
+                    x1 = x - comp / 2.0;
+                    x2 = x + comp / 2.0;
+                    break;
+                default:
+                    return criaPoligonoVazio();
+            }
+            
+            Poligono p = criaPoligonoVazio();
+            if (!p) return NULL;
+            
+            Ponto p1 = criaPonto(x1, y);
+            Ponto p2 = criaPonto(x2, y);
+            
+            if (p1) adicionaVerticePoligono(p, p1);
+            if (p2) adicionaVerticePoligono(p, p2);
+            if (p1) liberaPonto(p1);
+            if (p2) liberaPonto(p2);
+            
+            return p;
+        }
+        
+        case Ta: { 
+            Anteparo a = getAnteparoFromForma(f);
+            if (!a) return criaPoligonoVazio();
+            return transformaAnteparoEmPoligono(a);
+        }
+        
+        default:
+            fprintf(stderr, "Erro: tipo de forma desconhecido em criaPoligonoDeForma: %d\n", tipo);
+            return criaPoligonoVazio();
+    }
 }
