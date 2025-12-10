@@ -7,8 +7,8 @@
    Este módulo serve como armazenamento das formas e anteparos criados ao decorrer da execução do programa.
 */
 
-typedef struct no Node;
-typedef struct lista Lista;
+typedef void* Node;
+typedef void* Lista;
 
 Lista* iniciaLista(void);
 /*
