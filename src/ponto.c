@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "ponto.h"
+#include "strdupi.h"
 
 typedef struct{
     double x;
