@@ -12,10 +12,8 @@
 #include "strdupi.h"
 
 #define EPSILON 1e-12
-
-#ifndef M_PI
 #define M_PI 3.14159265358979323846
-#endif
+
 
 typedef struct {
     Lista* vertices; 
@@ -507,8 +505,7 @@ void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBo
         liberaPonto(primeiro);
     }
     
-    fprintf(svgFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n",
-            corPreench ? corPreench : "none", corBorda ? corBorda : "black");
+    fprintf(svgFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n", corPreench ? corPreench : "none", corBorda ? corBorda : "black");
 }
 
 Poligono transformaAnteparoEmPoligono(Anteparo a) {
