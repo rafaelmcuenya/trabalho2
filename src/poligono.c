@@ -16,10 +16,10 @@
 typedef struct {
     Lista* vertices; 
     int numVertices;
-}PoligonoStruct;
+} PoligonoStruct;
 
 Poligono criaPoligonoVazio(void) {
-    struct PoligonoStruct* p = malloc(sizeof(struct PoligonoStruct));
+    PoligonoStruct* p = malloc(sizeof(PoligonoStruct));
     if (!p) return NULL;
     
     p->vertices = iniciaLista();
@@ -30,20 +30,20 @@ Poligono criaPoligonoVazio(void) {
 Poligono criaPoligonoDeLista(Lista* vertices) {
     if (!vertices || getTamLista(vertices) < 2) return NULL;
     
-    struct PoligonoStruct* p = malloc(sizeof(struct PoligonoStruct));
+    PoligonoStruct* p = malloc(sizeof(PoligonoStruct));
     if (!p) return NULL;
     
     p->vertices = iniciaLista();
     p->numVertices = 0;
     
-    No* atual = getHeadNo(vertices);
+    Node* atual = getHeadNode(vertices);
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt) {
             insereTail(p->vertices, clonaPonto(pt));
             p->numVertices++;
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     if (p->numVertices < 2) {
@@ -58,13 +58,13 @@ Poligono criaPoligonoDeLista(Lista* vertices) {
 void liberaPoligono(Poligono p) {
     if (!p) return;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt) liberaPonto(pt);
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     freeLista(poly->vertices, NULL);
@@ -74,7 +74,7 @@ void liberaPoligono(Poligono p) {
 void adicionaVerticePoligono(Poligono p, Ponto vertice) {
     if (!p || !vertice) return;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     insereTail(poly->vertices, clonaPonto(vertice));
     poly->numVertices++;
 }
@@ -82,20 +82,20 @@ void adicionaVerticePoligono(Poligono p, Ponto vertice) {
 void removeVerticePoligono(Poligono p, int indice) {
     if (!p || indice < 0) return;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (indice >= poly->numVertices) return;
     
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     int i = 0;
     
     while (atual && i < indice) {
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
         i++;
     }
     
     if (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt) liberaPonto(pt);
         
         if (atual->prev) {
@@ -118,32 +118,32 @@ void removeVerticePoligono(Poligono p, int indice) {
 
 int getNumVertices(Poligono p) {
     if (!p) return 0;
-    return ((struct PoligonoStruct*)p)->numVertices;
+    return ((PoligonoStruct*)p)->numVertices;
 }
 
 int getNumSegmentos(Poligono p) {
     if (!p) return 0;
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     return (poly->numVertices > 0) ? poly->numVertices : 0;
 }
 
 Ponto getVertice(Poligono p, int indice) {
     if (!p || indice < 0) return NULL;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (indice >= poly->numVertices) return NULL;
     
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     int i = 0;
     
     while (atual && i < indice) {
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
         i++;
     }
     
     if (atual) {
-        Ponto original = (Ponto)getNoInfo(atual);
+        Ponto original = (Ponto)getNodeInfo(atual);
         if (original) {
             return clonaPonto(original);
         }
@@ -159,18 +159,18 @@ void* getSegmento(Poligono p, int indice) {
 Lista* getVertices(Poligono p) {
     if (!p) return NULL;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     Lista* copia = iniciaLista();
     
     if (!copia) return NULL;
     
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     while (atual) {
-        Ponto original = (Ponto)getNoInfo(atual);
+        Ponto original = (Ponto)getNodeInfo(atual);
         if (original) {
             insereTail(copia, clonaPonto(original));
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     return copia;
@@ -183,24 +183,24 @@ Lista* getSegmentos(Poligono p) {
 double calculaAreaPoligono(Poligono p) {
     if (!p) return 0.0;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 3) {
         return 0.0;
     }
     
     double area = 0.0;
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     
     while (atual) {
-        Ponto p1 = (Ponto)getNoInfo(atual);
-        No* prox = vaiNoDepois(atual);
+        Ponto p1 = (Ponto)getNodeInfo(atual);
+        Node* prox = vaiNodeDepois(atual);
         Ponto p2;
         
         if (prox) {
-            p2 = (Ponto)getNoInfo(prox);
+            p2 = (Ponto)getNodeInfo(prox);
         } else {
-            p2 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+            p2 = (Ponto)getNodeInfo(getHeadNode(poly->vertices));
         }
         
         if (p1 && p2) {
@@ -221,23 +221,23 @@ double calculaAreaPoligono(Poligono p) {
 double calculaPerimetro(Poligono p) {
     if (!p) return 0.0;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 2) return 0.0;
     
     double perimetro = 0.0;
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     
     while (atual) {
-        Ponto p1 = (Ponto)getNoInfo(atual);
-        No* prox = vaiNoDepois(atual);
+        Ponto p1 = (Ponto)getNodeInfo(atual);
+        Node* prox = vaiNodeDepois(atual);
         Ponto p2;
         
         if (prox) {
-            p2 = (Ponto)getNoInfo(prox);
+            p2 = (Ponto)getNodeInfo(prox);
         } else {
             if (poly->numVertices >= 3) {
-                p2 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+                p2 = (Ponto)getNodeInfo(getHeadNode(poly->vertices));
             } else {
                 break;
             }
@@ -258,7 +258,7 @@ double calculaPerimetro(Poligono p) {
 bool pontoDentroPoligono(Poligono p, Ponto ponto) {
     if (!p || !ponto) return false;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 2) return false;
     
@@ -293,17 +293,17 @@ bool pontoDentroPoligono(Poligono p, Ponto ponto) {
     double py = getYPonto(ponto);
     
     bool dentro = false;
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     
     while (atual) {
-        Ponto p1 = (Ponto)getNoInfo(atual);
-        No* prox = vaiNoDepois(atual);
+        Ponto p1 = (Ponto)getNodeInfo(atual);
+        Node* prox = vaiNodeDepois(atual);
         Ponto p2;
         
         if (prox) {
-            p2 = (Ponto)getNoInfo(prox);
+            p2 = (Ponto)getNodeInfo(prox);
         } else {
-            p2 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+            p2 = (Ponto)getNodeInfo(getHeadNode(poly->vertices));
         }
         
         if (p1 && p2) {
@@ -333,29 +333,26 @@ bool pontoDentroPoligono(Poligono p, Ponto ponto) {
 bool poligonosSeInterceptam(Poligono p1, Poligono p2) {
     if (!p1 || !p2) return false;
     
-    struct PoligonoStruct* poly1 = (struct PoligonoStruct*)p1;
-    No* atual = getHeadNo(poly1->vertices);
+    PoligonoStruct* poly1 = (PoligonoStruct*)p1;
+    Node* atual = getHeadNode(poly1->vertices);
     
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt && pontoDentroPoligono(p2, pt)) {
             return true;
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
-    struct PoligonoStruct* poly2 = (struct PoligonoStruct*)p2;
-    atual = getHeadNo(poly2->vertices);
+    
+    PoligonoStruct* poly2 = (PoligonoStruct*)p2;
+    atual = getHeadNode(poly2->vertices);
     
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt && pontoDentroPoligono(p1, pt)) {
             return true;
         }
-        atual = vaiNoDepois(atual);
-    }
-    
-    if (poly1->numVertices >= 2 && poly2->numVertices >= 2) {
-   
+        atual = vaiNodeDepois(atual);
     }
     
     return false;
@@ -364,15 +361,15 @@ bool poligonosSeInterceptam(Poligono p1, Poligono p2) {
 bool poligonoContemPoligono(Poligono externo, Poligono interno) {
     if (!externo || !interno) return false;
     
-    struct PoligonoStruct* polyInt = (struct PoligonoStruct*)interno;
-    No* atual = getHeadNo(polyInt->vertices);
+    PoligonoStruct* polyInt = (PoligonoStruct*)interno;
+    Node* atual = getHeadNode(polyInt->vertices);
     
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt && !pontoDentroPoligono(externo, pt)) {
             return false;
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     return true;
@@ -381,7 +378,7 @@ bool poligonoContemPoligono(Poligono externo, Poligono interno) {
 TipoPoligono classificaPoligono(Poligono p) {
     if (!p) return POLIGONO_SIMPLES;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 3) {
         return POLIGONO_SIMPLES;
@@ -399,7 +396,7 @@ TipoPoligono classificaPoligono(Poligono p) {
 bool ehPoligonoSimples(Poligono p) {
     if (!p) return false;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 3) return true;
     
@@ -409,30 +406,30 @@ bool ehPoligonoSimples(Poligono p) {
 bool ehPoligonoConvexo(Poligono p) {
     if (!p) return false;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 3) return false;
     
     int sinal = 0;
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     
     while (atual) {
-        Ponto p1 = (Ponto)getNoInfo(atual);
-        No* prox = vaiNoDepois(atual);
+        Ponto p1 = (Ponto)getNodeInfo(atual);
+        Node* prox = vaiNodeDepois(atual);
         Ponto p2, p3;
         
         if (prox) {
-            p2 = (Ponto)getNoInfo(prox);
-            No* prox2 = vaiNoDepois(prox);
+            p2 = (Ponto)getNodeInfo(prox);
+            Node* prox2 = vaiNodeDepois(prox);
             if (prox2) {
-                p3 = (Ponto)getNoInfo(prox2);
+                p3 = (Ponto)getNodeInfo(prox2);
             } else {
-                p3 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
+                p3 = (Ponto)getNodeInfo(getHeadNode(poly->vertices));
             }
         } else {
-            p2 = (Ponto)getNoInfo(getHeadNo(poly->vertices));
-            No* segundo = vaiNoDepois(getHeadNo(poly->vertices));
-            p3 = (Ponto)getNoInfo(segundo);
+            p2 = (Ponto)getNodeInfo(getHeadNode(poly->vertices));
+            Node* segundo = vaiNodeDepois(getHeadNode(poly->vertices));
+            p3 = (Ponto)getNodeInfo(segundo);
         }
         
         if (p1 && p2 && p3) {
@@ -457,7 +454,7 @@ bool ehPoligonoConvexo(Poligono p) {
 bool ehPoligonoEstrela(Poligono p) {
     if (!p) return false;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 3) return false;
     
@@ -471,7 +468,7 @@ Poligono criaPoligonoConvexo(Lista* pontos) {
 void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBorda) {
     if (!p || !svgFile) return;
     
-    struct PoligonoStruct* poly = (struct PoligonoStruct*)p;
+    PoligonoStruct* poly = (PoligonoStruct*)p;
     
     if (poly->numVertices < 2) return;
     
@@ -491,13 +488,13 @@ void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBo
     
     fprintf(svgFile, "<polygon points=\"");
     
-    No* atual = getHeadNo(poly->vertices);
+    Node* atual = getHeadNode(poly->vertices);
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt) {
             fprintf(svgFile, "%.2f,%.2f ", getXPonto(pt), getYPonto(pt));
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     Ponto primeiro = getVertice(p, 0);
@@ -506,7 +503,8 @@ void desenhaPoligonoSVG(Poligono p, FILE* svgFile, char* corPreench, char* corBo
         liberaPonto(primeiro);
     }
     
-    fprintf(svgFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n",corPreench ? corPreench : "none", corBorda ? corBorda : "black");
+    fprintf(svgFile, "\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n",
+            corPreench ? corPreench : "none", corBorda ? corBorda : "black");
 }
 
 Poligono transformaAnteparoEmPoligono(Anteparo a) {
@@ -560,16 +558,16 @@ Lista* poligonosDeSegmentos(Lista* segmentos) {
     Lista* poligonos = iniciaLista();
     if (!poligonos) return NULL;
     
-    No* atual = getHeadNo(segmentos);
+    Node* atual = getHeadNode(segmentos);
     while (atual) {
-        Anteparo seg = (Anteparo)getNoInfo(atual);
+        Anteparo seg = (Anteparo)getNodeInfo(atual);
         if (seg) {
             Poligono p = transformaAnteparoEmPoligono(seg);
             if (p) {
                 insereTail(poligonos, p);
             }
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     return poligonos;
@@ -597,13 +595,13 @@ Poligono uniaoPoligonos(Poligono p1, Poligono p2) {
     Lista* todos = getVertices(p1);
     Lista* verts2 = getVertices(p2);
     
-    No* atual = getHeadNo(verts2);
+    Node* atual = getHeadNode(verts2);
     while (atual) {
-        Ponto pt = (Ponto)getNoInfo(atual);
+        Ponto pt = (Ponto)getNodeInfo(atual);
         if (pt) {
             insereTail(todos, clonaPonto(pt));
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     Poligono uniao = criaPoligonoDeLista(todos);
