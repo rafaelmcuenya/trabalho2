@@ -356,10 +356,15 @@ Ponto raioAteAnteparo(Arvore* segAtivos, Ponto origem, double angulo, double rai
 }
 
 Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao, double raioMaximo, int threshold) {
+    printf("[DEBUG VISIBILIDADE] Entrando em calculaRegiaoVisivel\n");
+    
     if (!origem || !anteparos) {
         fprintf(stderr, "Erro: parâmetros inválidos em calculaRegiaoVisivel\n");
         return NULL;
     }
+    
+    printf("[DEBUG VISIBILIDADE] Origem: (%.2f, %.2f)\n", getXPonto(origem), getYPonto(origem));
+    printf("[DEBUG VISIBILIDADE] Número de anteparos: %d\n", getTamLista(anteparos));
     
     Lista* todos_anteparos = iniciaLista();
     Node* atual = getHeadNode(anteparos);
@@ -528,7 +533,7 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
     if (ponto_biombo) {
         liberaPonto(ponto_biombo);
     }
-    
+     printf("[DEBUG VISIBILIDADE] Polígono criado com %d vértices\n", getNumVertices(poligono));
     freeArvore(segAtivos, NULL);
     
     freeLista(todos_anteparos, (void (*)(void*))liberaAnteparo);
