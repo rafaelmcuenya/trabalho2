@@ -54,12 +54,6 @@ void desenhaRegiaoVisivelSVG(RegiaoVisivel regiao, FILE* svgFile, const char* co
    Desenha a região de visibilidade em um arquivo SVG.
 */
 
-void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEventos);
-/*
-   Função interna que prepara os eventos para a varredura angular.
-   Retorna um array de eventos que deve ser liberado pelo chamador.
-*/
-
 Ponto raioAteAnteparo(Arvore* segAtivos, Ponto origem, double angulo, double raioMax);
 /*
    Função interna que traça um raio a partir da origem em uma direção específica até encontrar um anteparo.
