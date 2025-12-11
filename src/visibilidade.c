@@ -132,10 +132,16 @@ static int atrasSegmento(Ponto origem, Ponto vertice, SegmentoAtivo* seg) {
 }
 
 static SegmentoAtivo* findSegPerto(Arvore* segAtivos, Ponto origem, double angulo) {
-    if (!segAtivos || vaziaAVL(segAtivos)) return NULL;
+    if (!segAtivos || vaziaAVL(segAtivos)) {
+        printf("[DEBUG FINDSEG] Árvore vazia ou nula\n");
+        return NULL;
+    }
     
     NoArv* raiz = getRaiz(segAtivos);
-    if (!raiz) return NULL;
+    if (!raiz) {
+        printf("[DEBUG FINDSEG] Raiz nula\n");
+        return NULL;
+    }
     
     SegmentoAtivo* mais_proximo = NULL;
     double menor_distancia = INF;
@@ -145,6 +151,8 @@ static SegmentoAtivo* findSegPerto(Arvore* segAtivos, Ponto origem, double angul
         
         SegmentoAtivo* seg = (SegmentoAtivo*)getNoInfo(no);
         if (seg && seg->ativo) {
+            printf("[DEBUG FINDSEG] Analisando segmento %d\n", seg->id);
+            
             double ox = getXPonto(origem);
             double oy = getYPonto(origem);
             double dx = cos(angulo);
@@ -156,13 +164,17 @@ static SegmentoAtivo* findSegPerto(Arvore* segAtivos, Ponto origem, double angul
             double y2 = getYPonto(seg->fim);
             
             double xi, yi;
-            if (interseccaoSegmentosCoordenadas(ox, oy, ox + dx * INF, oy + dy * INF,
-                                               x1, y1, x2, y2, &xi, &yi)) {
+            if (interseccaoSegmentosCoordenadas(ox, oy, ox + dx * INF, oy + dy * INF, x1, y1, x2, y2, &xi, &yi)) {
                 double dist = sqrt(pow(xi - ox, 2) + pow(yi - oy, 2));
-                if (dist < menor_distancia) {
+                printf("[DEBUG FINDSEG]  Interseção encontrada a distância %.2f\n", dist);
+                
+                if (dist < menor_distancia && dist > EPSILON) {
                     menor_distancia = dist;
                     mais_proximo = seg;
+                    printf("[DEBUG FINDSEG]  Novo mais próximo: segmento %d a %.2f\n", seg->id, dist);
                 }
+            } else {
+                printf("[DEBUG FINDSEG]  Sem interseção com este segmento\n");
             }
         }
         
@@ -171,8 +183,18 @@ static SegmentoAtivo* findSegPerto(Arvore* segAtivos, Ponto origem, double angul
     }
     
     percorrerArvore(raiz);
+    
+    if (mais_proximo) {
+        printf("[DEBUG FINDSEG] Segmento mais próximo encontrado: id=%d a dist=%.2f\n", 
+               mais_proximo->id, menor_distancia);
+    } else {
+        printf("[DEBUG FINDSEG] Nenhum segmento intercepta o raio\n");
+    }
+
     return mais_proximo;
 }
+
+
 
 static void addBigBB(Lista* anteparos, double xmin, double ymin, double xmax, double ymax) {
     char* cor = "#000000";
@@ -227,13 +249,15 @@ void liberaRegiaoVisivel(RegiaoVisivel regiao) {
     free(r);
 }
 
-void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEventos) {
+static void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEventos) {
     if (!origem || !anteparos) {
         *numEventos = 0;
         return NULL;
     }
     
     int numAnteparos = getTamLista(anteparos);
+    printf("[DEBUG VISIBILIDADE] Preparando eventos para %d anteparos\n", numAnteparos);
+    
     Evento* eventos = (Evento*)malloc(numAnteparos * 2 * sizeof(Evento));
     if (!eventos) {
         fprintf(stderr, "Erro: falha na alocação de eventos\n");
@@ -245,6 +269,9 @@ void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEvento
     Node* atual = getHeadNode(anteparos);
     int id_counter = 0;
     
+    double ox = getXPonto(origem);
+    double oy = getYPonto(origem);
+    
     while (atual) {
         Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
@@ -252,47 +279,55 @@ void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEvento
             double y1 = getY1Anteparo(a);
             double x2 = getX2Anteparo(a);
             double y2 = getY2Anteparo(a);
-            
             Ponto p1 = criaPonto(x1, y1);
             Ponto p2 = criaPonto(x2, y2);
             
             if (p1 && p2) {
                 double ang1 = calcularAngulo(origem, p1);
                 double ang2 = calcularAngulo(origem, p2);
+                double dist1 = calcularDistancia(origem, p1);
+                double dist2 = calcularDistancia(origem, p2);
                 
-                if (ang1 <= ang2) {
-                    eventos[count].ponto = p1;
+                printf("[DEBUG EVENTOS] Anteparo %d: p1(%.2f,%.2f) ang1=%.4f, p2(%.2f,%.2f) ang2=%.4f\n",
+                       idAnteparo(a), x1, y1, ang1, x2, y2, ang2);
+                
+                if (ang1 < ang2 || (fabs(ang1 - ang2) < EPSILON && dist1 < dist2)) {
+                
+                    eventos[count].ponto = clonaPonto(p1);  
                     eventos[count].angulo = ang1;
-                    eventos[count].distancia = calcularDistancia(origem, p1);
+                    eventos[count].distancia = dist1;
                     eventos[count].tipo = TIPO_INICIO;
                     eventos[count].anteparo = a;
                     eventos[count].id = id_counter++;
                     count++;
                     
-                    eventos[count].ponto = p2;
+                    eventos[count].ponto = clonaPonto(p2);  
                     eventos[count].angulo = ang2;
-                    eventos[count].distancia = calcularDistancia(origem, p2);
+                    eventos[count].distancia = dist2;
                     eventos[count].tipo = TIPO_FIM;
                     eventos[count].anteparo = a;
                     eventos[count].id = id_counter++;
                     count++;
                 } else {
-                    eventos[count].ponto = p2;
+                    eventos[count].ponto = clonaPonto(p2);  
                     eventos[count].angulo = ang2;
-                    eventos[count].distancia = calcularDistancia(origem, p2);
+                    eventos[count].distancia = dist2;
                     eventos[count].tipo = TIPO_INICIO;
                     eventos[count].anteparo = a;
                     eventos[count].id = id_counter++;
                     count++;
                     
-                    eventos[count].ponto = p1;
+                    eventos[count].ponto = clonaPonto(p1);  
                     eventos[count].angulo = ang1;
-                    eventos[count].distancia = calcularDistancia(origem, p1);
+                    eventos[count].distancia = dist1;
                     eventos[count].tipo = TIPO_FIM;
                     eventos[count].anteparo = a;
                     eventos[count].id = id_counter++;
                     count++;
                 }
+                
+                liberaPonto(p1);
+                liberaPonto(p2);
             } else {
                 if (p1) liberaPonto(p1);
                 if (p2) liberaPonto(p2);
@@ -302,6 +337,7 @@ void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEvento
     }
     
     *numEventos = count;
+    printf("[DEBUG VISIBILIDADE] Total de eventos criados: %d\n", count);
     return eventos;
 }
 
@@ -356,47 +392,98 @@ Ponto raioAteAnteparo(Arvore* segAtivos, Ponto origem, double angulo, double rai
 }
 
 Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao, double raioMaximo, int threshold) {
-    printf("[DEBUG VISIBILIDADE] Entrando em calculaRegiaoVisivel\n");
+    printf("[DEBUG VISIBILIDADE] ===== ENTRANDO EM calculaRegiaoVisivel =====\n");
     
     if (!origem || !anteparos) {
         fprintf(stderr, "Erro: parâmetros inválidos em calculaRegiaoVisivel\n");
         return NULL;
     }
     
-    printf("[DEBUG VISIBILIDADE] Origem: (%.2f, %.2f)\n", getXPonto(origem), getYPonto(origem));
+    double ox = getXPonto(origem);
+    double oy = getYPonto(origem);
+    printf("[DEBUG VISIBILIDADE] Origem: (%.2f, %.2f)\n", ox, oy);
     printf("[DEBUG VISIBILIDADE] Número de anteparos: %d\n", getTamLista(anteparos));
+    printf("[DEBUG VISIBILIDADE] Tipo ordenação: %c, Raio máximo: %.2f\n", tipoOrdenacao, raioMaximo);
+    
+    Node* atual = getHeadNode(anteparos);
+    int anteparo_count = 0;
+    while (atual && anteparo_count < 10) {  
+        Anteparo a = (Anteparo)getNodeInfo(atual);
+        if (a) {
+            printf("[DEBUG ANTEPAROS] %d: (%.2f,%.2f)->(%.2f,%.2f) cor=%s\n",
+                   idAnteparo(a), getX1Anteparo(a), getY1Anteparo(a),
+                   getX2Anteparo(a), getY2Anteparo(a), getCorAnteparo(a));
+            anteparo_count++;
+        }
+        atual = vaiNodeDepois(atual);
+    }
+    if (anteparo_count >= 10) {
+        printf("[DEBUG ANTEPAROS] ... e mais %d anteparos\n", getTamLista(anteparos) - 10);
+    }
     
     Lista* todos_anteparos = iniciaLista();
-    Node* atual = getHeadNode(anteparos);
+    if (!todos_anteparos) {
+        fprintf(stderr, "Erro: falha ao criar lista de anteparos\n");
+        return NULL;
+    }
+    
+    atual = getHeadNode(anteparos);
+    int clones_criados = 0;
     while (atual) {
         Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
             Anteparo copia = clonaAnteparo(a, idAnteparo(a));
             if (copia) {
                 insereTail(todos_anteparos, copia);
+                clones_criados++;
             }
         }
         atual = vaiNodeDepois(atual);
     }
+    printf("[DEBUG VISIBILIDADE] Clones criados: %d\n", clones_criados);
     
+    double MARGEM = 50.0;  
     double xmin = INF, ymin = INF, xmax = -INF, ymax = -INF;
+    int formas_encontradas = 0;
+    
     atual = getHeadNode(todos_anteparos);
     while (atual) {
         Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
-            xmin = fmin(xmin, fmin(getX1Anteparo(a), getX2Anteparo(a)));
-            ymin = fmin(ymin, fmin(getY1Anteparo(a), getY2Anteparo(a)));
-            xmax = fmax(xmax, fmax(getX1Anteparo(a), getX2Anteparo(a)));
-            ymax = fmax(ymax, fmax(getY1Anteparo(a), getY2Anteparo(a)));
+            double x1 = getX1Anteparo(a);
+            double y1 = getY1Anteparo(a);
+            double x2 = getX2Anteparo(a);
+            double y2 = getY2Anteparo(a);
+            
+            xmin = fmin(xmin, fmin(x1, x2));
+            ymin = fmin(ymin, fmin(y1, y2));
+            xmax = fmax(xmax, fmax(x1, x2));
+            ymax = fmax(ymax, fmax(y1, y2));
+            formas_encontradas++;
         }
         atual = vaiNodeDepois(atual);
     }
     
-    double expand = raioMaximo * 2;
-    xmin -= expand; ymin -= expand;
-    xmax += expand; ymax += expand;
+    printf("[DEBUG RETANGULO] Formas encontradas para bounding box: %d\n", formas_encontradas);
+    
+    if (xmin == INF || ymin == INF || xmax == -INF || ymax == -INF) {
+        printf("[DEBUG RETANGULO] Usando raio ao redor da origem\n");
+        xmin = ox - raioMaximo;
+        ymin = oy - raioMaximo;
+        xmax = ox + raioMaximo;
+        ymax = oy + raioMaximo;
+    }
+    
+    xmin -= MARGEM;
+    ymin -= MARGEM;
+    xmax += MARGEM;
+    ymax += MARGEM;
+    
+    printf("[DEBUG RETANGULO] Bounding box: (%.2f,%.2f) -> (%.2f,%.2f) com margem %.1f\n",
+           xmin, ymin, xmax, ymax, MARGEM);
     
     addBigBB(todos_anteparos, xmin, ymin, xmax, ymax);
+    printf("[DEBUG VISIBILIDADE] Retângulo envolvente adicionado\n");
     
     int numEventos = 0;
     Evento* eventos = (Evento*)prepararEventosVisibilidade(origem, todos_anteparos, &numEventos);
@@ -407,12 +494,30 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
         return NULL;
     }
     
+    printf("[DEBUG VISIBILIDADE] Eventos criados: %d\n", numEventos);
+    
+    for (int i = 0; i < numEventos && i < 5; i++) {
+        printf("[DEBUG EVENTOS] %d: tipo=%d, angulo=%.4f, dist=%.2f\n",
+               i, eventos[i].tipo, eventos[i].angulo, eventos[i].distancia);
+    }
+    if (numEventos > 10) {
+        printf("[DEBUG EVENTOS] ...\n");
+        for (int i = numEventos - 5; i < numEventos; i++) {
+            printf("[DEBUG EVENTOS] %d: tipo=%d, angulo=%.4f, dist=%.2f\n",
+                   i, eventos[i].tipo, eventos[i].angulo, eventos[i].distancia);
+        }
+    }
+    
     if (tipoOrdenacao == 'q') {
+        printf("[DEBUG ORDENACAO] Usando qsort\n");
         qsort(eventos, numEventos, sizeof(Evento), comparaEventosVisibilidade);
     } else {
+        printf("[DEBUG ORDENACAO] Usando mergeSort\n");
         mergeSort(eventos, numEventos, sizeof(Evento), 
                   (ComparaFunc)comparaEventosVisibilidade, NULL, threshold);
     }
+    
+    printf("[DEBUG ORDENACAO] Eventos ordenados\n");
     
     Arvore* segAtivos = iniciarArvore(comparaSegAtivos);
     if (!segAtivos) {
@@ -421,6 +526,8 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
         freeLista(todos_anteparos, (void (*)(void*))liberaAnteparo);
         return NULL;
     }
+    
+    printf("[DEBUG VISIBILIDADE] Árvore AVL criada\n");
     
     Poligono poligono = criaPoligonoVazio();
     if (!poligono) {
@@ -431,13 +538,22 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
         return NULL;
     }
     
+    printf("[DEBUG VISIBILIDADE] Polígono vazio criado\n");
+    
     SegmentoAtivo* biombo_atual = NULL;
     Ponto ponto_biombo = NULL;
+    int eventos_processados = 0;
     
     for (int i = 0; i < numEventos; i++) {
         Evento* ev = &eventos[i];
+        eventos_processados++;
+        
+        printf("[DEBUG PROCESSAMENTO] Evento %d/%d: tipo=%d, angulo=%.4f, dist=%.2f\n",
+               i+1, numEventos, ev->tipo, ev->angulo, ev->distancia);
         
         if (ev->tipo == TIPO_INICIO) {
+            printf("[DEBUG PROCESSAMENTO]  INÍCIO de segmento\n");
+            
             SegmentoAtivo* seg = (SegmentoAtivo*)malloc(sizeof(SegmentoAtivo));
             if (seg) {
                 seg->anteparo = ev->anteparo;
@@ -448,13 +564,14 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
                 double x2 = getX2Anteparo(ev->anteparo);
                 double y2 = getY2Anteparo(ev->anteparo);
                 
-                Ponto p1 = criaPonto(x1, y1);
-                Ponto p2 = criaPonto(x2, y2);
+                Ponto p_inicio = ev->ponto;
+                double px = getXPonto(p_inicio);
+                double py = getYPonto(p_inicio);
                 
-                if (calcularDistancia(origem, p1) < calcularDistancia(origem, p2) + EPSILON) {
-                    seg->fim = clonaPonto(p2);
+                if (fabs(px - x1) < EPSILON && fabs(py - y1) < EPSILON) {
+                    seg->fim = criaPonto(x2, y2);
                 } else {
-                    seg->fim = clonaPonto(p1);
+                    seg->fim = criaPonto(x1, y1);
                 }
                 
                 seg->anguloInicio = ev->angulo;
@@ -462,39 +579,67 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
                 seg->ativo = 1;
                 seg->id = ev->id;
                 
-                insereNo(segAtivos, seg);
+                printf("[DEBUG SEGMENTO] Novo segmento ativo: id=%d, ang=[%.4f,%.4f]\n",
+                       seg->id, seg->anguloInicio, seg->anguloFim);
                 
-                liberaPonto(p1);
-                liberaPonto(p2);
+                NoArv* no_inserido = insereNo(segAtivos, seg);
+                if (no_inserido) {
+                    printf("[DEBUG SEGMENTO] Segmento inserido na árvore\n");
+                } else {
+                    printf("[DEBUG SEGMENTO] ERRO: Falha ao inserir segmento\n");
+                }
                 
-                if (!atrasSegmento(origem, ev->ponto, biombo_atual)) {
+                int atras = atrasSegmento(origem, ev->ponto, biombo_atual);
+                printf("[DEBUG BIOMBO] Ponto está atrás do biombo? %d\n", atras);
+                
+                if (!atras) {
+                    printf("[DEBUG BIOMBO] Ponto NÃO está atrás, processando...\n");
+                    
                     if (ponto_biombo) {
                         Ponto interseccao = raioAteAnteparo(segAtivos, origem, ev->angulo, raioMaximo);
                         if (interseccao) {
+                            printf("[DEBUG POLIGONO] Adicionando vértices: biombo->interseccao\n");
                             adicionaVerticePoligono(poligono, ponto_biombo);
                             adicionaVerticePoligono(poligono, interseccao);
                             liberaPonto(interseccao);
                         }
                         
+                        printf("[DEBUG POLIGONO] Adicionando vértice: interseccao->evento\n");
                         adicionaVerticePoligono(poligono, ev->ponto);
                         
                         liberaPonto(ponto_biombo);
                         ponto_biombo = clonaPonto(ev->ponto);
                         biombo_atual = seg;
+                        
+                        printf("[DEBUG BIOMBO] Novo biombo definido no ponto do evento\n");
+                    } else {
+                        printf("[DEBUG BIOMBO] Primeiro biombo definido\n");
+                        ponto_biombo = clonaPonto(ev->ponto);
+                        biombo_atual = seg;
                     }
+                } else {
+                    printf("[DEBUG BIOMBO] Ponto está atrás, ignorando\n");
                 }
+            } else {
+                printf("[DEBUG PROCESSAMENTO] ERRO: Falha ao alocar segmento ativo\n");
             }
             
         } else if (ev->tipo == TIPO_FIM) {
+            printf("[DEBUG PROCESSAMENTO]  FIM de segmento\n");
+            
             SegmentoAtivo chave;
             chave.id = ev->id;
             
             NoArv* no = buscaBinaria(segAtivos, &chave);
             if (no) {
                 SegmentoAtivo* seg = (SegmentoAtivo*)getNoInfo(no);
+                printf("[DEBUG SEGMENTO] Segmento encontrado: id=%d\n", seg->id);
                 
                 if (seg == biombo_atual) {
+                    printf("[DEBUG BIOMBO] Removendo biombo atual\n");
+                    
                     if (ponto_biombo) {
+                        printf("[DEBUG POLIGONO] Adicionando vértices: biombo->evento\n");
                         adicionaVerticePoligono(poligono, ponto_biombo);
                         adicionaVerticePoligono(poligono, ev->ponto);
                         
@@ -502,41 +647,68 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
                         ponto_biombo = raioAteAnteparo(segAtivos, origem, ev->angulo, raioMaximo);
                         
                         biombo_atual = findSegPerto(segAtivos, origem, ev->angulo);
+                        if (biombo_atual) {
+                            printf("[DEBUG BIOMBO] Novo biombo encontrado: id=%d\n", biombo_atual->id);
+                        } else {
+                            printf("[DEBUG BIOMBO] Nenhum biombo encontrado\n");
+                        }
                     }
                 }
                 
+                printf("[DEBUG SEGMENTO] Removendo segmento da árvore\n");
                 removeNo(segAtivos, seg);
                 
                 if (seg->inicio) liberaPonto(seg->inicio);
                 if (seg->fim) liberaPonto(seg->fim);
                 free(seg);
+                
+                printf("[DEBUG SEGMENTO] Segmento removido e liberado\n");
+            } else {
+                printf("[DEBUG SEGMENTO] ERRO: Segmento não encontrado na árvore (id=%d)\n", ev->id);
             }
         }
+        
+        int num_vertices = getNumVertices(poligono);
+        printf("[DEBUG POLIGONO] Vértices após evento %d: %d\n", i+1, num_vertices);
     }
+    
+    printf("[DEBUG VISIBILIDADE] Eventos processados: %d/%d\n", eventos_processados, numEventos);
     
     int num_vertices = getNumVertices(poligono);
     if (num_vertices > 0) {
+        printf("[DEBUG POLIGONO] Fechando polígono com %d vértices\n", num_vertices);
         Ponto primeiro = getVertice(poligono, 0);
         if (primeiro) {
             adicionaVerticePoligono(poligono, primeiro);
             liberaPonto(primeiro);
+            printf("[DEBUG POLIGONO] Polígono fechado, agora com %d vértices\n", getNumVertices(poligono));
         }
+    } else {
+        printf("[DEBUG POLIGONO] Polígono ainda vazio após processar todos os eventos\n");
     }
     
+    printf("[DEBUG VISIBILIDADE] Liberando eventos...\n");
     for (int i = 0; i < numEventos; i++) {
         if (eventos[i].ponto) {
             liberaPonto(eventos[i].ponto);
         }
     }
     free(eventos);
+    printf("[DEBUG VISIBILIDADE] Eventos liberados\n");
     
     if (ponto_biombo) {
         liberaPonto(ponto_biombo);
+        printf("[DEBUG VISIBILIDADE] Ponto do biombo liberado\n");
     }
-     printf("[DEBUG VISIBILIDADE] Polígono criado com %d vértices\n", getNumVertices(poligono));
+    
+    printf("[DEBUG VISIBILIDADE] Liberando árvore AVL...\n");
     freeArvore(segAtivos, NULL);
     
+    printf("[DEBUG VISIBILIDADE] Liberando lista de anteparos...\n");
     freeLista(todos_anteparos, (void (*)(void*))liberaAnteparo);
+    
+    printf("[DEBUG VISIBILIDADE] ===== SAINDO DE calculaRegiaoVisivel =====\n");
+    printf("[DEBUG VISIBILIDADE] Polígono final criado com %d vértices\n", getNumVertices(poligono));
     
     return poligono;
 }
