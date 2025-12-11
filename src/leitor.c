@@ -318,7 +318,25 @@ static void cmdBombaDestruicao(double x, double y, const char* sfx) {
         return;
     }
     
-    printf("[DEBUG] Região visível criada com %d vértices\n", getNumVertices(regiaoVisivel));
+    printf("[DEBUG BOMBA DESTRUICAO] Região visível criada com %d vértices\n", 
+       getNumVertices(regiaoVisivel));
+
+if (regiaoVisivel) {
+    int num_verts = getNumVertices(regiaoVisivel);
+    printf("[DEBUG BOMBA DESTRUICAO] Acessando vértices do polígono...\n");
+    
+    for (int i = 0; i < num_verts && i < 3; i++) {  // Testar só 3
+        printf("[DEBUG BOMBA DESTRUICAO] Tentando acessar vértice %d...\n", i);
+        Ponto v = getVertice(regiaoVisivel, i);
+        if (v) {
+            printf("[DEBUG BOMBA DESTRUICAO] Vértice %d: (%.2f, %.2f)\n", 
+                   i, getXPonto(v), getYPonto(v));
+            liberaPonto(v);
+        } else {
+            printf("[DEBUG BOMBA DESTRUICAO] ERRO: Vértice %d é NULL!\n", i);
+        }
+    }
+}
     
     Lista* formasDestruidas = iniciaLista();
     
