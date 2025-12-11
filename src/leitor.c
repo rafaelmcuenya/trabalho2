@@ -1,3 +1,4 @@
+#include <math.h>
 #include "leitor.h"
 #include <string.h>
 #include <ctype.h>
