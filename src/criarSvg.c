@@ -10,6 +10,8 @@
 #include "anteparo.h"
 #include "lista.h"
 
+#define M_PI 3.14159265358979323846
+
 void svgCabecalho(FILE* svgFile, double viewBoxX, double viewBoxY, double viewBoxW, double viewBoxH) {
     if (!svgFile) return;
     
