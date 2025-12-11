@@ -178,13 +178,13 @@ static void addBigBB(Lista* anteparos, double xmin, double ymin, double xmax, do
     char* cor = "#000000";
     
     /* Lado inferior */
-    Anteparo a1 = criaAnteparo(-1, xmin, ymin, xmax, ymin, cor);
+    Anteparo a1 = criaAnteparo(9999991, xmin, ymin, xmax, ymin, cor);
     /* Lado direito */
-    Anteparo a2 = criaAnteparo(-2, xmax, ymin, xmax, ymax, cor);
+    Anteparo a2 = criaAnteparo(9999992, xmax, ymin, xmax, ymax, cor);
     /* Lado superior */
-    Anteparo a3 = criaAnteparo(-3, xmax, ymax, xmin, ymax, cor);
+    Anteparo a3 = criaAnteparo(9999993, xmax, ymax, xmin, ymax, cor);
     /* Lado esquerdo */
-    Anteparo a4 = criaAnteparo(-4, xmin, ymax, xmin, ymin, cor);
+    Anteparo a4 = criaAnteparo(9999994, xmin, ymax, xmin, ymin, cor);
     
     if (a1) insereTail(anteparos, a1);
     if (a2) insereTail(anteparos, a2);
