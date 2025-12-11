@@ -132,7 +132,11 @@ Ponto getVertice(Poligono p, int indice) {
     
     PoligonoStruct* poly = (PoligonoStruct*)p;
     
-    if (indice >= poly->numVertices) return NULL;
+    if (indice >= poly->numVertices) {
+        printf("[ERRO POLIGONO] Índice %d fora dos limites (%d vértices)\n", 
+               indice, poly->numVertices);
+        return NULL;
+    }
     
     Node* atual = getHeadNode(poly->vertices);
     int i = 0;
