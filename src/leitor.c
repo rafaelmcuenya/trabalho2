@@ -254,21 +254,22 @@ static void cmdTransformaAnteparo(int i, int j, char direcao) {
             }
             
             if (sucesso && getTamLista(listaAnteparosLocais) > 0) {
-                removeFormaPorId(formas, id, (void (*)(void*))freeForma);
-                totalFormasDestruidas++;
-                
-                Node* atual = getHeadNode(listaAnteparosLocais);
-                while (atual) {
-                    Anteparo a = (Anteparo)getNodeInfo(atual);
-                    if (a) {
-                        insereTail(anteparos, a);
-                        totalAnteparosCriados++;
-                        
-                        txtA(id, id, direcao, forma, a);
-                    }
-                    atual = vaiNodeDepois(atual);
-                }
-            } else {
+    
+              Node* atual = getHeadNode(listaAnteparosLocais);
+              while (atual) {
+                  Anteparo a = (Anteparo)getNodeInfo(atual);
+                  if (a) {
+                    insereTail(anteparos, a);
+                    totalAnteparosCriados++;
+            
+                    txtA(id, id, direcao, forma, a);  
+                  }
+                  atual = vaiNodeDepois(atual);
+               }
+    
+               removeFormaPorId(formas, id, (void (*)(void*))freeForma);
+               totalFormasDestruidas++;
+              } else {
                 printf("[AVISO] Falha ao transformar forma %d em anteparo\n", id);
             }
             
