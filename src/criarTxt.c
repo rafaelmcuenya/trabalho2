@@ -138,13 +138,13 @@ void txtP(double x, double y, const char* cor, const char* sfx, Lista* formasPin
         fprintf(txtFile, "Formas pintadas com a cor %s: %d\n", cor, count);
         
         if (count > 0) {
-            No* atual = getHeadNo(formasPintadas);
+            Node* atual = getHeadNode(formasPintadas);
             while (atual) {
-                Forma f = (Forma)getNoInfo(atual);
+                Forma f = (Forma)getNodeInfo(atual);
                 if (f) {
                     escreveInfoForma(f);
                 }
-                atual = vaiNoDepois(atual);
+                atual = vaiNodeDepois(atual);
             }
         }
     }
@@ -168,12 +168,12 @@ void txtCln(double x, double y, double dx, double dy, const char* sfx, Lista* fo
         fprintf(txtFile, "Formas clonadas (deslocamento: %.2f, %.2f): %d\n", dx, dy, count);
         
         if (count > 0) {
-            No* atualOrig = getHeadNo(formasOriginais);
-            No* atualClone = getHeadNo(clones);
+            No* atualOrig = getHeadNode(formasOriginais);
+            No* atualClone = getHeadNode(clones);
             
             while (atualOrig && atualClone) {
-                Forma original = (Forma)getNoInfo(atualOrig);
-                Forma clone = (Forma)getNoInfo(atualClone);
+                Forma original = (Forma)getNodeInfo(atualOrig);
+                Forma clone = (Forma)getNodeInfo(atualClone);
                 
                 if (original && clone) {
                     fprintf(txtFile, "Original (ID %d) -> Clone (ID %d):\n", 
@@ -188,8 +188,8 @@ void txtCln(double x, double y, double dx, double dy, const char* sfx, Lista* fo
                     fprintf(txtFile, "  Posição clone: (%.2f, %.2f)\n", xClone, yClone);
                 }
                 
-                atualOrig = vaiNoDepois(atualOrig);
-                atualClone = vaiNoDepois(atualClone);
+                atualOrig = vaiNodeDepois(atualOrig);
+                atualClone = vaiNodeDepois(atualClone);
             }
         }
     }
