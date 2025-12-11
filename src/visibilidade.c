@@ -242,7 +242,7 @@ void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEvento
     }
     
     int count = 0;
-    No* atual = getHeadNode(anteparos);
+    Node* atual = getHeadNode(anteparos);
     int id_counter = 0;
     
     while (atual) {
