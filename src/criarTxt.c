@@ -106,13 +106,13 @@ void txtD(double x, double y, const char* sfx, Lista* formasDestruidas, Poligono
         fprintf(txtFile, "Formas destruídas: %d\n", count);
         
         if (count > 0) {
-            No* atual = getHeadNo(formasDestruidas);
+            Node* atual = getHeadNode(formasDestruidas);
             while (atual) {
-                Forma f = (Forma)getNoInfo(atual);
+                Forma f = (Forma)getNodeInfo(atual);
                 if (f) {
                     escreveInfoForma(f);
                 }
-                atual = vaiNoDepois(atual);
+                atual = vaiNodeDepois(atual);
             }
         }
     }
@@ -168,8 +168,8 @@ void txtCln(double x, double y, double dx, double dy, const char* sfx, Lista* fo
         fprintf(txtFile, "Formas clonadas (deslocamento: %.2f, %.2f): %d\n", dx, dy, count);
         
         if (count > 0) {
-            No* atualOrig = getHeadNode(formasOriginais);
-            No* atualClone = getHeadNode(clones);
+            Node* atualOrig = getHeadNode(formasOriginais);
+            Node* atualClone = getHeadNode(clones);
             
             while (atualOrig && atualClone) {
                 Forma original = (Forma)getNodeInfo(atualOrig);
