@@ -260,11 +260,21 @@ double calculaPerimetro(Poligono p) {
 }
 
 bool pontoDentroPoligono(Poligono p, Ponto ponto) {
-    if (!p || !ponto) return false;
+    printf("[DEBUG POLIGONO] pontoDentroPoligono chamado\n");
+    
+    if (!p || !ponto) {
+        printf("[DEBUG POLIGONO] ERRO: Parâmetros NULL\n");
+        return false;
+    }
     
     PoligonoStruct* poly = (PoligonoStruct*)p;
     
-    if (poly->numVertices < 2) return false;
+    printf("[DEBUG POLIGONO] Polígono tem %d vértices\n", poly->numVertices);
+    
+    if (poly->numVertices < 2) {
+        printf("[DEBUG POLIGONO] Polígono com menos de 2 vértices\n");
+        return false;
+    }
     
     if (poly->numVertices == 2) {
         Ponto p1 = getVertice(p, 0);
