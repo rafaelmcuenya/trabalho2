@@ -120,9 +120,9 @@ void svgAnteparos(FILE* svgFile, Lista* anteparos) {
     
     fprintf(svgFile, "<!-- Anteparos -->\n");
     
-    No* atual = getHeadNo(anteparos);
+    Node* atual = getHeadNode(anteparos);
     while (atual) {
-        Anteparo a = (Anteparo)getNoInfo(atual);
+        Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
             double x1 = getX1Anteparo(a);
             double y1 = getY1Anteparo(a);
@@ -139,7 +139,7 @@ void svgAnteparos(FILE* svgFile, Lista* anteparos) {
             
             if (cor) free(cor);
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
 }
 
@@ -256,9 +256,9 @@ void svgGeo(const char* caminhoCompleto, Lista* formas) {
     }
     
     double minX = 1e30, minY = 1e30, maxX = -1e30, maxY = -1e30;
-    No* atual = getHeadNo(formas);
+    Node* atual = getHeadNode(formas);
     while (atual) {
-        Forma f = (Forma)getNoInfo(atual);
+        Forma f = (Forma)getNodeInfo(atual);
         if (f) {
             double x = getXForma(f);
             double y = getYForma(f);
@@ -281,7 +281,7 @@ void svgGeo(const char* caminhoCompleto, Lista* formas) {
                 maxY = fmax(maxY, y + r);
             }
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     double margem = 50.0;
@@ -293,13 +293,13 @@ void svgGeo(const char* caminhoCompleto, Lista* formas) {
     svgCabecalho(svgFile, minX, minY, largura, altura);
     
     fprintf(svgFile, "<!-- Formas Geométricas do arquivo .geo -->\n");
-    atual = getHeadNo(formas);
+    atual = getHeadNode(formas);
     while (atual) {
-        Forma f = (Forma)getNoInfo(atual);
+        Forma f = (Forma)getNodeInfo(atual);
         if (f) {
             svgForma(svgFile, f);
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     svgRodape(svgFile);
@@ -320,9 +320,9 @@ void svgQry(const char* caminhoCompleto, Lista* formas, Lista* anteparos) {
     double minX = 1e30, minY = 1e30, maxX = -1e30, maxY = -1e30;
     
     if (formas) {
-        No* atual = getHeadNo(formas);
+        Node* atual = getHeadNode(formas);
         while (atual) {
-            Forma f = (Forma)getNoInfo(atual);
+            Forma f = (Forma)getNodeInfo(atual);
             if (f) {
                 double x = getXForma(f);
                 double y = getYForma(f);
@@ -331,14 +331,14 @@ void svgQry(const char* caminhoCompleto, Lista* formas, Lista* anteparos) {
                 maxX = fmax(maxX, x);
                 maxY = fmax(maxY, y);
             }
-            atual = vaiNoDepois(atual);
+            atual = vaiNodeDepois(atual);
         }
     }
     
     if (anteparos) {
-        No* atual = getHeadNo(anteparos);
+        Node* atual = getHeadNode(anteparos);
         while (atual) {
-            Anteparo a = (Anteparo)getNoInfo(atual);
+            Anteparo a = (Anteparo)getNodeInfo(atual);
             if (a) {
                 double x1 = getX1Anteparo(a);
                 double y1 = getY1Anteparo(a);
@@ -349,7 +349,7 @@ void svgQry(const char* caminhoCompleto, Lista* formas, Lista* anteparos) {
                 maxX = fmax(maxX, fmax(x1, x2));
                 maxY = fmax(maxY, fmax(y1, y2));
             }
-            atual = vaiNoDepois(atual);
+            atual = vaiNodeDepois(atual);
         }
     }
     
@@ -363,13 +363,13 @@ void svgQry(const char* caminhoCompleto, Lista* formas, Lista* anteparos) {
     
     if (formas && !estaVazia(formas)) {
         fprintf(svgFile, "<!-- Formas Remanescentes -->\n");
-        No* atual = getHeadNo(formas);
+        Node* atual = getHeadNode(formas);
         while (atual) {
-            Forma f = (Forma)getNoInfo(atual);
+            Forma f = (Forma)getNodeInfo(atual);
             if (f) {
                 svgForma(svgFile, f);
             }
-            atual = vaiNoDepois(atual);
+            atual = vaiNodeDepois(atual);
         }
     }
     
