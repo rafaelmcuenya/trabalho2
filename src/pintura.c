@@ -46,26 +46,31 @@ int pintaRetangulo(Retangulo retangulo, int ids[4], Lista* lista) {
            x, y, largura, altura);
     
     char* corBorda = getCorBRetangulo(retangulo);
-    printf("[DEBUG PINTURA] Cor da borda: %s\n", corBorda ? corBorda : "NULL");
-    
-    if (!corBorda) {
-        fprintf(stderr, "Erro: não foi possível obter a cor da borda do retângulo\n");
-        return 0;
-    }
-    
-    Anteparo anteparos[4];
-    int sucesso = 1;
-    
-    // Embaixo
-    anteparos[0] = criaAnteparo(ids[0], x, y, x + largura, y, corBorda);
-    // Encima
-    anteparos[1] = criaAnteparo(ids[1], x, y + altura, x + largura, y + altura, corBorda);
-    // Esquerda
-    anteparos[2] = criaAnteparo(ids[2], x, y, x, y + altura, corBorda);
-    // Direita
-    anteparos[3] = criaAnteparo(ids[3], x + largura, y, x + largura, y + altura, corBorda);
-    
-    free(corBorda);
+printf("[DEBUG PINTURA] Cor da borda: %s\n", corBorda ? corBorda : "NULL");
+
+if (!corBorda) {
+    fprintf(stderr, "Erro: não foi possível obter a cor da borda do retângulo\n");
+    return 0;
+}
+
+char* corParaUsar = corBorda;
+while (*corParaUsar && 
+       !((*corParaUsar >= 'a' && *corParaUsar <= 'z') ||
+         (*corParaUsar >= 'A' && *corParaUsar <= 'Z') ||
+         (*corParaUsar >= '0' && *corParaUsar <= '9') ||
+         *corParaUsar == '#')) {
+    corParaUsar++;
+}
+
+printf("[DEBUG PINTURA] Cor para usar: %s\n", corParaUsar);
+
+Anteparo anteparos[4];
+anteparos[0] = criaAnteparo(ids[0], x, y, x + largura, y, corParaUsar);
+anteparos[1] = criaAnteparo(ids[1], x, y + altura, x + largura, y + altura, corParaUsar);
+anteparos[2] = criaAnteparo(ids[2], x, y, x, y + altura, corParaUsar);
+anteparos[3] = criaAnteparo(ids[3], x + largura, y, x + largura, y + altura, corParaUsar);
+
+free(corBorda);
     
     for (int i = 0; i < 4; i++) {
         if (!anteparos[i]) {
