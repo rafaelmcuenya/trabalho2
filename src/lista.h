@@ -7,8 +7,8 @@
    Este módulo serve como armazenamento das formas e anteparos criados ao decorrer da execução do programa.
 */
 
-typedef void* Node;
-typedef void* Lista;
+typedef struct No Node;
+typedef struct Lista Lista;
 
 Lista* iniciaLista(void);
 /*
@@ -18,7 +18,7 @@ Lista* iniciaLista(void);
 bool estaVazia(Lista *l);
 /*
    Verifica se uma lista está vazia.
-   Retorna 0 se estiver vazia, 1 caso contrário.
+   Retorna true se estiver vazia, false caso contrário.
 */
 
 int getTamLista(Lista *l);
