@@ -308,14 +308,19 @@ static void cmdBombaDestruicao(double x, double y, const char* sfx) {
     printf("[QRY] Bomba de destruição em (%.2f, %.2f) sufixo: %s\n", x, y, sfx);
     
     Ponto origem = criaPonto(x, y);
+    printf("[DEBUG] Ponto origem criado: (%.2f, %.2f)\n", getXPonto(origem), getYPonto(origem));
     
+    printf("[DEBUG] Antes de calculaRegiaoVisivel\n");
     Poligono regiaoVisivel = calculaRegiaoVisivel(origem, anteparos, 'q', 1000.0, 10);
+    printf("[DEBUG] Após calculaRegiaoVisivel\n");
     
     if (!regiaoVisivel) {
         printf("[ERRO] Não foi possível calcular região visível\n");
         liberaPonto(origem);
         return;
     }
+    
+    printf("[DEBUG] Região visível criada com %d vértices\n", getNumVertices(regiaoVisivel));
     
     Lista* formasDestruidas = iniciaLista();
     
