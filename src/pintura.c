@@ -65,6 +65,7 @@ while (*corParaUsar &&
 printf("[DEBUG PINTURA] Cor para usar: %s\n", corParaUsar);
 
 Anteparo anteparos[4];
+      int sucesso = 1;
 anteparos[0] = criaAnteparo(ids[0], x, y, x + largura, y, corParaUsar);
 anteparos[1] = criaAnteparo(ids[1], x, y + altura, x + largura, y + altura, corParaUsar);
 anteparos[2] = criaAnteparo(ids[2], x, y, x, y + altura, corParaUsar);
