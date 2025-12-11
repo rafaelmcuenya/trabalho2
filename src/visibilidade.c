@@ -242,11 +242,11 @@ void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEvento
     }
     
     int count = 0;
-    No* atual = getHeadNo(anteparos);
+    No* atual = getHeadNode(anteparos);
     int id_counter = 0;
     
     while (atual) {
-        Anteparo a = (Anteparo)getNoInfo(atual);
+        Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
             double x1 = getX1Anteparo(a);
             double y1 = getY1Anteparo(a);
@@ -298,7 +298,7 @@ void* prepararEventosVisibilidade(Ponto origem, Lista* anteparos, int* numEvento
                 if (p2) liberaPonto(p2);
             }
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     *numEventos = count;
@@ -362,29 +362,29 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
     }
     
     Lista* todos_anteparos = iniciaLista();
-    No* atual = getHeadNo(anteparos);
+    Node* atual = getHeadNode(anteparos);
     while (atual) {
-        Anteparo a = (Anteparo)getNoInfo(atual);
+        Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
             Anteparo copia = clonaAnteparo(a, idAnteparo(a));
             if (copia) {
                 insereTail(todos_anteparos, copia);
             }
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     double xmin = INF, ymin = INF, xmax = -INF, ymax = -INF;
-    atual = getHeadNo(todos_anteparos);
+    atual = getHeadNode(todos_anteparos);
     while (atual) {
-        Anteparo a = (Anteparo)getNoInfo(atual);
+        Anteparo a = (Anteparo)getNodeInfo(atual);
         if (a) {
             xmin = fmin(xmin, fmin(getX1Anteparo(a), getX2Anteparo(a)));
             ymin = fmin(ymin, fmin(getY1Anteparo(a), getY2Anteparo(a)));
             xmax = fmax(xmax, fmax(getX1Anteparo(a), getX2Anteparo(a)));
             ymax = fmax(ymax, fmax(getY1Anteparo(a), getY2Anteparo(a)));
         }
-        atual = vaiNoDepois(atual);
+        atual = vaiNodeDepois(atual);
     }
     
     double expand = raioMaximo * 2;
