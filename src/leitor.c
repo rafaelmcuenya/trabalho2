@@ -282,20 +282,26 @@ static void cmdTransformaAnteparo(int i, int j, char direcao) {
 
 typedef struct {
     Poligono regiao;
+    Poligono regiao_clone;  
 } ContextoPredicado;
 
 static int predicadoFormaDentroPoligono(void* data, void* contexto) {
     Forma f = (Forma)data;
     ContextoPredicado* ctx = (ContextoPredicado*)contexto;
     
-    if (!f || !ctx || !ctx->regiao) return 0;
+    if (!f || !ctx) return 0;
+    
+    Poligono regiao_usar = ctx->regiao_clone ? ctx->regiao_clone : ctx->regiao;
+    
+    if (!regiao_usar) return 0;
     
     Ponto centro = criaPonto(getXForma(f), getYForma(f));
-    int resultado = pontoDentroPoligono(ctx->regiao, centro);
+    int resultado = pontoDentroPoligono(regiao_usar, centro);
     liberaPonto(centro);
     
     return resultado;
 }
+
 
 static void cmdBombaDestruicao(double x, double y, const char* sfx) {
     totalInstrucoes++;
@@ -325,7 +331,7 @@ if (regiaoVisivel) {
     int num_verts = getNumVertices(regiaoVisivel);
     printf("[DEBUG BOMBA DESTRUICAO] Acessando vértices do polígono...\n");
     
-    for (int i = 0; i < num_verts && i < 3; i++) {  // Testar só 3
+    for (int i = 0; i < num_verts && i < 3; i++) {  
         printf("[DEBUG BOMBA DESTRUICAO] Tentando acessar vértice %d...\n", i);
         Ponto v = getVertice(regiaoVisivel, i);
         if (v) {
@@ -357,15 +363,22 @@ if (regiaoVisivel) {
         atual = proximo;
     }
     
-    ContextoPredicado ctx = {regiaoVisivel};
-    totalFormasDestruidas += removeFormasPorPredicado(formas, 
-        (int (*)(void*))predicadoFormaDentroPoligono, 
-        (void (*)(void*))freeForma);
+    ContextoPredicado ctx;
+ctx.regiao = regiaoVisivel;
+ctx.regiao_clone = criaPoligonoDeLista(getVertices(regiaoVisivel));  // CLONE
+
+totalFormasDestruidas += removeFormasPorPredicado(formas, 
+    (int (*)(void*))predicadoFormaDentroPoligono, 
+    (void (*)(void*))freeForma, &ctx);  
+    
+if (ctx.regiao_clone) {
+    liberaPoligono(ctx.regiao_clone);
+}
     
     txtD(x, y, sfx, formasDestruidas, regiaoVisivel);
     
     if (strcmp(sfx, "-") != 0) {
-        printf("[SVG] Gerando arquivo com sufixo %s (implementação pendente)\n", sfx);
+        printf("[SVG] Gerando arquivo com sufixo %s \n", sfx);
     }
     
     liberaPonto(origem);
