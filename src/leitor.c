@@ -36,6 +36,10 @@ static char currentFontFamily[32] = "sans";
 static char currentFontWeight[8] = "n";
 static double currentFontSize = 12.0;
 
+static char currentGeoBase[FILE_NAME_LEN] = "";
+static char currentQryBase[FILE_NAME_LEN] = "";
+static char currentOutputDir[PATH_LEN] = "";
+
 static void construirCaminhoCompleto(const char* baseDir, const char* arquivo, char* caminhoCompleto) {
     if (!baseDir || strlen(baseDir) == 0) {
         strcpy(caminhoCompleto, arquivo);
@@ -117,7 +121,7 @@ static void removeFormaPorId(Lista* lista, int id, void (*libera)(void*)) {
     }
 }
 
-static int removeFormasPorPredicado(Lista* lista, int (*predicado)(void* data), void (*libera)(void*)) {
+static int removeFormasPorPredicado(Lista* lista, int (*predicado)(void* data, void* contexto), void (*libera)(void*), void* contexto) {
     if (!lista || estaVazia(lista)) return 0;
     
     int removidas = 0;
@@ -127,7 +131,7 @@ static int removeFormasPorPredicado(Lista* lista, int (*predicado)(void* data), 
     
     while (atual) {
         void* data = getNodeInfo(atual);
-        if (data && (!predicado || !predicado(data))) {
+        if (data && (!predicado || !predicado(data, contexto))) {
             insereTail(temp, data);
         } else {
             removidas++;
@@ -152,6 +156,185 @@ static int removeFormasPorPredicado(Lista* lista, int (*predicado)(void* data), 
 static int formaTemId(void* data, int idAlvo) {
     Forma f = (Forma)data;
     return (f && getIdForma(f) == idAlvo) ? 1 : 0;
+}
+
+static void gerarSvgComSufixo(const char* nomeBaseGeo, const char* nomeBaseQry, const char* sufixo, 
+                              const char* outputDir, Lista* formas, Lista* anteparos, 
+                              Poligono regiaoVisivel, double bombaX, double bombaY, 
+                              const char* bombaTipo, const char* bombaCor, 
+                              double deslocamentoX, double deslocamentoY) {
+    if (!nomeBaseGeo || !sufixo || !formas) return;
+    
+    char caminhoSvg[PATH_LEN];
+    
+    if (nomeBaseQry && strlen(nomeBaseQry) > 0) {
+        gerarNomeComSufixo(nomeBaseGeo, nomeBaseQry, sufixo, outputDir, caminhoSvg, 1);
+    } else {
+        gerarNomeComSufixo(nomeBaseGeo, NULL, sufixo, outputDir, caminhoSvg, 1);
+    }
+    
+    FILE* svgFile = fopen(caminhoSvg, "w");
+    if (!svgFile) {
+        fprintf(stderr, "Erro: Não foi possível criar arquivo SVG: %s\n", caminhoSvg);
+        return;
+    }
+    
+    double minX = 1e30, minY = 1e30, maxX = -1e30, maxY = -1e30;
+    
+    Node* atual = getHeadNode(formas);
+    while (atual) {
+        Forma f = (Forma)getNodeInfo(atual);
+        if (f) {
+            double x = getXForma(f);
+            double y = getYForma(f);
+            minX = fmin(minX, x);
+            minY = fmin(minY, y);
+            maxX = fmax(maxX, x);
+            maxY = fmax(maxY, y);
+            
+            TipoForma tipo = getTipoForma(f);
+            if (tipo == Tr) {
+                Retangulo r = getRetanguloFromForma(f);
+                maxX = fmax(maxX, x + getLarguraRetangulo(r));
+                maxY = fmax(maxY, y + getAlturaRetangulo(r));
+            } else if (tipo == Tc) {
+                Circulo c = getCirculoFromForma(f);
+                double r = getRaioCirculo(c);
+                minX = fmin(minX, x - r);
+                minY = fmin(minY, y - r);
+                maxX = fmax(maxX, x + r);
+                maxY = fmax(maxY, y + r);
+            } else if (tipo == Tl) {
+                Linha l = getLinhaFromForma(f);
+                double x1 = getX1Linha(l);
+                double y1 = getY1Linha(l);
+                double x2 = getX2Linha(l);
+                double y2 = getY2Linha(l);
+                minX = fmin(minX, fmin(x1, x2));
+                minY = fmin(minY, fmin(y1, y2));
+                maxX = fmax(maxX, fmax(x1, x2));
+                maxY = fmax(maxY, fmax(y1, y2));
+            }
+        }
+        atual = vaiNodeDepois(atual);
+    }
+    
+    if (anteparos) {
+        atual = getHeadNode(anteparos);
+        while (atual) {
+            Anteparo a = (Anteparo)getNodeInfo(atual);
+            if (a) {
+                double x1 = getX1Anteparo(a);
+                double y1 = getY1Anteparo(a);
+                double x2 = getX2Anteparo(a);
+                double y2 = getY2Anteparo(a);
+                minX = fmin(minX, fmin(x1, x2));
+                minY = fmin(minY, fmin(y1, y2));
+                maxX = fmax(maxX, fmax(x1, x2));
+                maxY = fmax(maxY, fmax(y1, y2));
+            }
+            atual = vaiNodeDepois(atual);
+        }
+    }
+    
+    if (regiaoVisivel) {
+        int numVertices = getNumVertices(regiaoVisivel);
+        for (int i = 0; i < numVertices; i++) {
+            Ponto v = getVertice(regiaoVisivel, i);
+            if (v) {
+                minX = fmin(minX, getXPonto(v));
+                minY = fmin(minY, getYPonto(v));
+                maxX = fmax(maxX, getXPonto(v));
+                maxY = fmax(maxY, getYPonto(v));
+                liberaPonto(v);
+            }
+        }
+    }
+    
+    minX = fmin(minX, bombaX);
+    minY = fmin(minY, bombaY);
+    maxX = fmax(maxX, bombaX);
+    maxY = fmax(maxY, bombaY);
+    
+    double margem = 50.0;
+    minX -= margem; minY -= margem;
+    maxX += margem; maxY += margem;
+    double largura = maxX - minX;
+    double altura = maxY - minY;
+    
+    fprintf(svgFile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    fprintf(svgFile, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" ");
+    fprintf(svgFile, "viewBox=\"%.2f %.2f %.2f %.2f\">\n", minX, minY, largura, altura);
+    fprintf(svgFile, "<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"white\" stroke=\"none\"/>\n",
+            minX, minY, largura, altura);
+    
+    fprintf(svgFile, "<!-- Formas -->\n");
+    atual = getHeadNode(formas);
+    while (atual) {
+        Forma f = (Forma)getNodeInfo(atual);
+        if (f) {
+            svgForma(svgFile, f);
+        }
+        atual = vaiNodeDepois(atual);
+    }
+    
+    if (anteparos && !estaVazia(anteparos)) {
+        fprintf(svgFile, "<!-- Anteparos -->\n");
+        atual = getHeadNode(anteparos);
+        while (atual) {
+            Anteparo a = (Anteparo)getNodeInfo(atual);
+            if (a) {
+                double x1 = getX1Anteparo(a);
+                double y1 = getY1Anteparo(a);
+                double x2 = getX2Anteparo(a);
+                double y2 = getY2Anteparo(a);
+                char* cor = getCorAnteparo(a);
+                
+                fprintf(svgFile, "<line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" ", x1, y1, x2, y2);
+                fprintf(svgFile, "stroke=\"#%s\" stroke-width=\"3\" stroke-dasharray=\"5,5\" ", cor ? cor : "000000");
+                fprintf(svgFile, "stroke-opacity=\"0.7\"/>\n");
+                
+                fprintf(svgFile, "<text x=\"%.2f\" y=\"%.2f\" font-size=\"4\" fill=\"darkblue\">A%d</text>\n",
+                        (x1 + x2)/2, (y1 + y2)/2 - 3, idAnteparo(a));
+                
+                if (cor) free(cor);
+            }
+            atual = vaiNodeDepois(atual);
+        }
+    }
+    
+    if (regiaoVisivel) {
+        fprintf(svgFile, "<!-- Região de Visibilidade -->\n");
+        if (strcmp(bombaTipo, "d") == 0) {
+            svgRegiaoVisivel(svgFile, regiaoVisivel, "lightblue", "blue");
+        } else if (strcmp(bombaTipo, "p") == 0) {
+            char corPreench[32];
+            if (bombaCor && bombaCor[0] == '#') {
+                strcpy(corPreench, bombaCor);
+            } else if (bombaCor) {
+                snprintf(corPreench, sizeof(corPreench), "#%s", bombaCor);
+            } else {
+                strcpy(corPreench, "#ffff00");
+            }
+            svgRegiaoVisivel(svgFile, regiaoVisivel, corPreench, "darkred");
+        } else if (strcmp(bombaTipo, "cln") == 0) {
+            svgRegiaoVisivel(svgFile, regiaoVisivel, "lightgreen", "green");
+        }
+    }
+    
+    fprintf(svgFile, "<!-- Bomba -->\n");
+    if (strcmp(bombaTipo, "d") == 0) {
+        svgBombaDestruicao(svgFile, bombaX, bombaY, "red");
+    } else if (strcmp(bombaTipo, "p") == 0) {
+        svgBombaPintura(svgFile, bombaX, bombaY, bombaCor);
+    } else if (strcmp(bombaTipo, "cln") == 0) {
+        svgBombaClonagem(svgFile, bombaX, bombaY, deslocamentoX, deslocamentoY);
+    }
+    
+    fprintf(svgFile, "</svg>\n");
+    fclose(svgFile);
+    
+    printf("[SVG] Arquivo com sufixo gerado: %s\n", caminhoSvg);
 }
 
 static void cmdCriaCirculo(int id, double x, double y, double r, char corb[], char corp[]) {
@@ -254,22 +437,20 @@ static void cmdTransformaAnteparo(int i, int j, char direcao) {
             }
             
             if (sucesso && getTamLista(listaAnteparosLocais) > 0) {
-    
-              Node* atual = getHeadNode(listaAnteparosLocais);
-              while (atual) {
-                  Anteparo a = (Anteparo)getNodeInfo(atual);
-                  if (a) {
-                    insereTail(anteparos, a);
-                    totalAnteparosCriados++;
-            
-                    txtA(id, id, direcao, forma, a);  
-                  }
-                  atual = vaiNodeDepois(atual);
-               }
-    
-               removeFormaPorId(formas, id, (void (*)(void*))freeForma);
-               totalFormasDestruidas++;
-              } else {
+                Node* atual = getHeadNode(listaAnteparosLocais);
+                while (atual) {
+                    Anteparo a = (Anteparo)getNodeInfo(atual);
+                    if (a) {
+                        insereTail(anteparos, a);
+                        totalAnteparosCriados++;
+                        txtA(id, id, direcao, forma, a);  
+                    }
+                    atual = vaiNodeDepois(atual);
+                }
+                
+                removeFormaPorId(formas, id, (void (*)(void*))freeForma);
+                totalFormasDestruidas++;
+            } else {
                 printf("[AVISO] Falha ao transformar forma %d em anteparo\n", id);
             }
             
@@ -302,7 +483,6 @@ static int predicadoFormaDentroPoligono(void* data, void* contexto) {
     return resultado;
 }
 
-
 static void cmdBombaDestruicao(double x, double y, const char* sfx) {
     totalInstrucoes++;
     
@@ -314,7 +494,6 @@ static void cmdBombaDestruicao(double x, double y, const char* sfx) {
     printf("[QRY] Bomba de destruição em (%.2f, %.2f) sufixo: %s\n", x, y, sfx);
     
     Ponto origem = criaPonto(x, y);
-    printf("[DEBUG] Ponto origem criado: (%.2f, %.2f)\n", getXPonto(origem), getYPonto(origem));
     
     Poligono regiaoVisivel = calculaRegiaoVisivel(origem, anteparos, 'q', 1000.0, 10);
     
@@ -323,26 +502,6 @@ static void cmdBombaDestruicao(double x, double y, const char* sfx) {
         liberaPonto(origem);
         return;
     }
-    
-    printf("[DEBUG BOMBA DESTRUICAO] Região visível criada com %d vértices\n", 
-       getNumVertices(regiaoVisivel));
-
-if (regiaoVisivel) {
-    int num_verts = getNumVertices(regiaoVisivel);
-    printf("[DEBUG BOMBA DESTRUICAO] Acessando vértices do polígono...\n");
-    
-    for (int i = 0; i < num_verts && i < 3; i++) {  
-        printf("[DEBUG BOMBA DESTRUICAO] Tentando acessar vértice %d...\n", i);
-        Ponto v = getVertice(regiaoVisivel, i);
-        if (v) {
-            printf("[DEBUG BOMBA DESTRUICAO] Vértice %d: (%.2f, %.2f)\n", 
-                   i, getXPonto(v), getYPonto(v));
-            liberaPonto(v);
-        } else {
-            printf("[DEBUG BOMBA DESTRUICAO] ERRO: Vértice %d é NULL!\n", i);
-        }
-    }
-}
     
     Lista* formasDestruidas = iniciaLista();
     
@@ -364,21 +523,30 @@ if (regiaoVisivel) {
     }
     
     ContextoPredicado ctx;
-ctx.regiao = regiaoVisivel;
-ctx.regiao_clone = criaPoligonoDeLista(getVertices(regiaoVisivel));  // CLONE
-
-totalFormasDestruidas += removeFormasPorPredicado(formas, 
-    (int (*)(void*))predicadoFormaDentroPoligono, 
-    (void (*)(void*))freeForma, &ctx);  
+    ctx.regiao = regiaoVisivel;
+    ctx.regiao_clone = criaPoligonoDeLista(getVertices(regiaoVisivel));
     
-if (ctx.regiao_clone) {
-    liberaPoligono(ctx.regiao_clone);
-}
+    totalFormasDestruidas += removeFormasPorPredicado(formas, 
+        (int (*)(void*, void*))predicadoFormaDentroPoligono, 
+        (void (*)(void*))freeForma, &ctx);  
+    
+    if (ctx.regiao_clone) {
+        liberaPoligono(ctx.regiao_clone);
+    }
     
     txtD(x, y, sfx, formasDestruidas, regiaoVisivel);
     
     if (strcmp(sfx, "-") != 0) {
-        printf("[SVG] Gerando arquivo com sufixo %s \n", sfx);
+        printf("[SVG] Gerando arquivo de destruição com sufixo %s\n", sfx);
+        
+        Poligono regiaoParaSvg = criaPoligonoDeLista(getVertices(regiaoVisivel));
+        
+        gerarSvgComSufixo(currentGeoBase, currentQryBase, sfx, currentOutputDir, 
+                         formas, anteparos, regiaoParaSvg, x, y, "d", NULL, 0.0, 0.0);
+        
+        if (regiaoParaSvg) {
+            liberaPoligono(regiaoParaSvg);
+        }
     }
     
     liberaPonto(origem);
@@ -467,7 +635,16 @@ static void cmdBombaPintura(double x, double y, const char* cor, const char* sfx
     txtP(x, y, cor, sfx, formasPintadas, regiaoVisivel);
     
     if (strcmp(sfx, "-") != 0) {
-        printf("[SVG] Gerando arquivo de pintura com sufixo %s (implementação pendente)\n", sfx);
+        printf("[SVG] Gerando arquivo de pintura com sufixo %s\n", sfx);
+        
+        Poligono regiaoParaSvg = criaPoligonoDeLista(getVertices(regiaoVisivel));
+        
+        gerarSvgComSufixo(currentGeoBase, currentQryBase, sfx, currentOutputDir, 
+                         formas, anteparos, regiaoParaSvg, x, y, "p", cor, 0.0, 0.0);
+        
+        if (regiaoParaSvg) {
+            liberaPoligono(regiaoParaSvg);
+        }
     }
     
     liberaPonto(origem);
@@ -576,9 +753,18 @@ static void cmdBombaClonagem(double x, double y, double dx, double dy, const cha
     }
     
     txtCln(x, y, dx, dy, sfx, formasOriginais, clones);
-
+    
     if (strcmp(sfx, "-") != 0) {
-        printf("[SVG] Gerando arquivo de clonagem com sufixo %s (implementação pendente)\n", sfx);
+        printf("[SVG] Gerando arquivo de clonagem com sufixo %s\n", sfx);
+        
+        Poligono regiaoParaSvg = criaPoligonoDeLista(getVertices(regiaoVisivel));
+        
+        gerarSvgComSufixo(currentGeoBase, currentQryBase, sfx, currentOutputDir, 
+                         formas, anteparos, regiaoParaSvg, x, y, "cln", NULL, dx, dy);
+        
+        if (regiaoParaSvg) {
+            liberaPoligono(regiaoParaSvg);
+        }
     }
     
     liberaPonto(origem);
@@ -590,6 +776,10 @@ static void cmdBombaClonagem(double x, double y, double dx, double dy, const cha
 void inicializarSistema(void) {
     formas = iniciaLista();
     anteparos = iniciaLista();
+    
+    currentGeoBase[0] = '\0';
+    currentQryBase[0] = '\0';
+    currentOutputDir[0] = '\0';
     
     printf("[SISTEMA] Sistema inicializado\n");
 }
@@ -689,6 +879,18 @@ void processarArquivo(const char* caminho, const char* inputDir, int ehQry, cons
     char caminhoCompleto[PATH_LEN];
     construirCaminhoCompleto(inputDir, caminho, caminhoCompleto);
     
+    if (!ehQry) {
+        strcpy(currentGeoBase, nomeBase);
+    } else {
+        char nomeBaseQry[FILE_NAME_LEN];
+        extrairNomeBase(caminho, nomeBaseQry);
+        strcpy(currentQryBase, nomeBaseQry);
+    }
+    
+    if (outputDir) {
+        strcpy(currentOutputDir, outputDir);
+    }
+    
     FILE *f;
     abrirArquivo(&f, caminhoCompleto);
     
@@ -721,12 +923,136 @@ void processarArquivo(const char* caminho, const char* inputDir, int ehQry, cons
         char caminhoSvgFinal[PATH_LEN];
         gerarNomeQrySvg(nomeBase, nomeBaseQry, outputDir, caminhoSvgFinal);
         
- 
-        printf("[SVG] Arquivo final com consulta gerado: %s\n", caminhoSvgFinal);
+        FILE* svgFile = fopen(caminhoSvgFinal, "w");
+        if (svgFile) {
+            double minX = 1e30, minY = 1e30, maxX = -1e30, maxY = -1e30;
+            
+            Node* atual = getHeadNode(formas);
+            while (atual) {
+                Forma f = (Forma)getNodeInfo(atual);
+                if (f) {
+                    double x = getXForma(f);
+                    double y = getYForma(f);
+                    minX = fmin(minX, x);
+                    minY = fmin(minY, y);
+                    maxX = fmax(maxX, x);
+                    maxY = fmax(maxY, y);
+                }
+                atual = vaiNodeDepois(atual);
+            }
+            
+            atual = getHeadNode(anteparos);
+            while (atual) {
+                Anteparo a = (Anteparo)getNodeInfo(atual);
+                if (a) {
+                    double x1 = getX1Anteparo(a);
+                    double y1 = getY1Anteparo(a);
+                    double x2 = getX2Anteparo(a);
+                    double y2 = getY2Anteparo(a);
+                    minX = fmin(minX, fmin(x1, x2));
+                    minY = fmin(minY, fmin(y1, y2));
+                    maxX = fmax(maxX, fmax(x1, x2));
+                    maxY = fmax(maxY, fmax(y1, y2));
+                }
+                atual = vaiNodeDepois(atual);
+            }
+            
+            double margem = 50.0;
+            minX -= margem; minY -= margem;
+            maxX += margem; maxY += margem;
+            double largura = maxX - minX;
+            double altura = maxY - minY;
+            
+            fprintf(svgFile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            fprintf(svgFile, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" ");
+            fprintf(svgFile, "viewBox=\"%.2f %.2f %.2f %.2f\">\n", minX, minY, largura, altura);
+            fprintf(svgFile, "<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"white\" stroke=\"none\"/>\n",
+                    minX, minY, largura, altura);
+            
+            fprintf(svgFile, "<!-- Formas -->\n");
+            atual = getHeadNode(formas);
+            while (atual) {
+                Forma f = (Forma)getNodeInfo(atual);
+                if (f) {
+                    svgForma(svgFile, f);
+                }
+                atual = vaiNodeDepois(atual);
+            }
+            
+            if (anteparos && !estaVazia(anteparos)) {
+                fprintf(svgFile, "<!-- Anteparos -->\n");
+                atual = getHeadNode(anteparos);
+                while (atual) {
+                    Anteparo a = (Anteparo)getNodeInfo(atual);
+                    if (a) {
+                        double x1 = getX1Anteparo(a);
+                        double y1 = getY1Anteparo(a);
+                        double x2 = getX2Anteparo(a);
+                        double y2 = getY2Anteparo(a);
+                        char* cor = getCorAnteparo(a);
+                        
+                        fprintf(svgFile, "<line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" ", x1, y1, x2, y2);
+                        fprintf(svgFile, "stroke=\"#%s\" stroke-width=\"3\" stroke-dasharray=\"5,5\" ", cor ? cor : "000000");
+                        fprintf(svgFile, "stroke-opacity=\"0.7\"/>\n");
+                        
+                        if (cor) free(cor);
+                    }
+                    atual = vaiNodeDepois(atual);
+                }
+            }
+            
+            fprintf(svgFile, "</svg>\n");
+            fclose(svgFile);
+            printf("[SVG] Arquivo final com consulta gerado: %s\n", caminhoSvgFinal);
+        }
     } else {
         char caminhoSvg[PATH_LEN];
         gerarNomeGeoSvg(nomeBase, outputDir, caminhoSvg);
-        printf("[SVG] Arquivo base gerado: %s\n", caminhoSvg);
+        
+        FILE* svgFile = fopen(caminhoSvg, "w");
+        if (svgFile) {
+            double minX = 1e30, minY = 1e30, maxX = -1e30, maxY = -1e30;
+            
+            Node* atual = getHeadNode(formas);
+            while (atual) {
+                Forma f = (Forma)getNodeInfo(atual);
+                if (f) {
+                    double x = getXForma(f);
+                    double y = getYForma(f);
+                    minX = fmin(minX, x);
+                    minY = fmin(minY, y);
+                    maxX = fmax(maxX, x);
+                    maxY = fmax(maxY, y);
+                }
+                atual = vaiNodeDepois(atual);
+            }
+            
+            double margem = 50.0;
+            minX -= margem; minY -= margem;
+            maxX += margem; maxY += margem;
+            double largura = maxX - minX;
+            double altura = maxY - minY;
+            
+            fprintf(svgFile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            fprintf(svgFile, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" ");
+            fprintf(svgFile, "viewBox=\"%.2f %.2f %.2f %.2f\">\n", minX, minY, largura, altura);
+            fprintf(svgFile, "<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"white\" stroke=\"none\"/>\n",
+                    minX, minY, largura, altura);
+            
+            fprintf(svgFile, "<!-- Formas do arquivo .geo -->\n");
+            atual = getHeadNode(formas);
+            while (atual) {
+                Forma f = (Forma)getNodeInfo(atual);
+                if (f) {
+                    svgForma(svgFile, f);
+                }
+                atual = vaiNodeDepois(atual);
+            }
+            
+            fprintf(svgFile, "</svg>\n");
+            fclose(svgFile);
+            printf("[SVG] Arquivo base gerado: %s\n", caminhoSvg);
+        }
     }
     
     fclose(f);
