@@ -1,22 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lista.h"
-#include "strdupi.h"
 
-typedef struct {
-    void *data;          
-    struct no *prev;    
-    struct no *next;   
-} Node;
+struct No {
+    void *data;
+    struct No *prev;
+    struct No *next;
+};
 
-typedef struct {
-    Node *head;          
-    Node *tail;         
-    int tam;             
-}Lista;
+struct Lista {
+    struct No *head;
+    struct No *tail;
+    int tam;
+};
 
-static Node* criaNode(void *data) {
-    Node *novoNode = (Node*)malloc(sizeof(Node));
+static struct No* criaNode(void *data) {
+    struct No *novoNode = (struct No*)malloc(sizeof(struct No));
     if (!novoNode) {
         fprintf(stderr, "Erro: falha na alocação do nó\n");
         return NULL;
@@ -30,7 +29,7 @@ static Node* criaNode(void *data) {
 }
 
 Lista* iniciaLista(void) {
-    Lista *l = (Lista*)malloc(sizeof(Lista));
+    struct Lista *l = (struct Lista*)malloc(sizeof(struct Lista));
     if (!l) {
         fprintf(stderr, "Erro: falha na alocação da lista\n");
         return NULL;
@@ -40,137 +39,156 @@ Lista* iniciaLista(void) {
     l->tail = NULL;
     l->tam = 0;
     
-    return l;
+    return (Lista*)l;
 }
 
 bool estaVazia(Lista *l) {
-    return (l == NULL || l->tam == 0);
+    struct Lista *lista = (struct Lista*)l;
+    return (lista == NULL || lista->tam == 0);
 }
 
 int getTamLista(Lista *l) {
-    return (l == NULL) ? 0 : l->tam;
+    struct Lista *lista = (struct Lista*)l;
+    return (lista == NULL) ? 0 : lista->tam;
 }
 
 void insereHead(Lista *l, void *novaInfo) {
-    if (!l || !novaInfo) {
+    struct Lista *lista = (struct Lista*)l;
+    
+    if (!lista || !novaInfo) {
         fprintf(stderr, "Erro: parâmetros inválidos em insereHead\n");
         return;
     }
     
-    Node *novoNode = criaNode(novaInfo);
+    struct No *novoNode = criaNode(novaInfo);
     if (!novoNode) return;
     
     if (estaVazia(l)) {
-        l->head = novoNode;
-        l->tail = novoNode;
+        lista->head = novoNode;
+        lista->tail = novoNode;
     } else {
-        novoNode->next = l->head;
-        l->head->prev = novoNode;
-        l->head = novoNode;
+        novoNode->next = lista->head;
+        lista->head->prev = novoNode;
+        lista->head = novoNode;
     }
     
-    l->tam++;
+    lista->tam++;
 }
 
 void insereTail(Lista *l, void *novaInfo) {
-    if (!l || !novaInfo) {
+    struct Lista *lista = (struct Lista*)l;
+    
+    if (!lista || !novaInfo) {
         fprintf(stderr, "Erro: parâmetros inválidos em insereTail\n");
         return;
     }
     
-    Node *novoNode = criaNode(novaInfo);
+    struct No *novoNode = criaNode(novaInfo);
     if (!novoNode) return;
     
     if (estaVazia(l)) {
-        l->head = novoNode;
-        l->tail = novoNode;
+        lista->head = novoNode;
+        lista->tail = novoNode;
     } else {
-        novoNode->prev = l->tail;
-        l->tail->next = novoNode;
-        l->tail = novoNode;
+        novoNode->prev = lista->tail;
+        lista->tail->next = novoNode;
+        lista->tail = novoNode;
     }
     
-    l->tam++;
+    lista->tam++;
 }
 
 void* removeHead(Lista *l) {
+    struct Lista *lista = (struct Lista*)l;
+    
     if (estaVazia(l)) {
         return NULL;
     }
     
-    Node *node_to_remove = l->head;
+    struct No *node_to_remove = lista->head;
     void *data = node_to_remove->data;
     
-    if (l->tam == 1) {
-        l->head = NULL;
-        l->tail = NULL;
+    if (lista->tam == 1) {
+        lista->head = NULL;
+        lista->tail = NULL;
     } else {
-        l->head = node_to_remove->next;
-        l->head->prev = NULL;
+        lista->head = node_to_remove->next;
+        lista->head->prev = NULL;
     }
     
     free(node_to_remove);
-    l->tam--;
+    lista->tam--;
     
     return data;
 }
 
 void* removeTail(Lista *l) {
+    struct Lista *lista = (struct Lista*)l;
+    
     if (estaVazia(l)) {
         return NULL;
     }
     
-    Node *node_to_remove = l->tail;
+    struct No *node_to_remove = lista->tail;
     void *data = node_to_remove->data;
     
-    if (l->tam == 1) {
-        l->head = NULL;
-        l->tail = NULL;
+    if (lista->tam == 1) {
+        lista->head = NULL;
+        lista->tail = NULL;
     } else {
-        l->tail = node_to_remove->prev;
-        l->tail->next = NULL;
+        lista->tail = node_to_remove->prev;
+        lista->tail->next = NULL;
     }
     
     free(node_to_remove);
-    l->tam--;
+    lista->tam--;
     
     return data;
 }
 
 void* getHeadInfo(Lista *l) {
-    return (estaVazia(l)) ? NULL : l->head->data;
+    struct Lista *lista = (struct Lista*)l;
+    return (estaVazia(l)) ? NULL : lista->head->data;
 }
 
 void* getTailInfo(Lista *l) {
-    return (estaVazia(l)) ? NULL : l->tail->data;
+    struct Lista *lista = (struct Lista*)l;
+    return (estaVazia(l)) ? NULL : lista->tail->data;
 }
 
 Node* getHeadNode(Lista *l) {
-    return (estaVazia(l)) ? NULL : l->head;
+    struct Lista *lista = (struct Lista*)l;
+    return (estaVazia(l)) ? NULL : (Node*)lista->head;
 }
 
 Node* getTailNode(Lista *l) {
-    return (estaVazia(l)) ? NULL : l->tail;
+    struct Lista *lista = (struct Lista*)l;
+    return (estaVazia(l)) ? NULL : (Node*)lista->tail;
 }
 
 void* getNodeInfo(Node *n) {
-    return (n == NULL) ? NULL : n->data;
+    struct No *node = (struct No*)n;
+    return (node == NULL) ? NULL : node->data;
 }
 
 Node* vaiNodeDepois(Node *n) {
-    return (n == NULL) ? NULL : n->next;
+    struct No *node = (struct No*)n;
+    return (node == NULL) ? NULL : (Node*)node->next;
 }
 
 Node* vaiNodeAntes(Node *n) {
-    return (n == NULL) ? NULL : n->prev;
+    struct No *node = (struct No*)n;
+    return (node == NULL) ? NULL : (Node*)node->prev;
 }
 
 void* procuraLista(Lista *l, void *key, int (*compare)(void *a, void *b)) {
+    struct Lista *lista = (struct Lista*)l;
+    
     if (estaVazia(l) || !key || !compare) {
         return NULL;
     }
     
-    Node *current = l->head;
+    struct No *current = lista->head;
     while (current) {
         if (compare(current->data, key) == 0) {
             return current->data;
@@ -186,13 +204,15 @@ int temNaLista(Lista *l, void *key, int (*compare)(void *a, void *b)) {
 }
 
 int removendoLista(Lista *l, int (*predicate)(void *data), void (*free_data)(void *data)) {
+    struct Lista *lista = (struct Lista*)l;
+    
     if (estaVazia(l) || !predicate) {
         return 0;
     }
     
     int removed = 0;
-    Node *current = l->head;
-    Node *next_node;
+    struct No *current = lista->head;
+    struct No *next_node;
     
     while (current) {
         next_node = current->next;
@@ -201,13 +221,13 @@ int removendoLista(Lista *l, int (*predicate)(void *data), void (*free_data)(voi
             if (current->prev) {
                 current->prev->next = current->next;
             } else {
-                l->head = current->next;
+                lista->head = current->next;
             }
             
             if (current->next) {
                 current->next->prev = current->prev;
             } else {
-                l->tail = current->prev;
+                lista->tail = current->prev;
             }
             
             if (free_data) {
@@ -215,7 +235,7 @@ int removendoLista(Lista *l, int (*predicate)(void *data), void (*free_data)(voi
             }
             free(current);
             
-            l->tam--;
+            lista->tam--;
             removed++;
         }
         
@@ -226,10 +246,12 @@ int removendoLista(Lista *l, int (*predicate)(void *data), void (*free_data)(voi
 }
 
 void limpaLista(Lista *l, void (*free_data)(void *data)) {
-    if (!l) return;
+    struct Lista *lista = (struct Lista*)l;
     
-    Node *current = l->head;
-    Node *next_node;
+    if (!lista) return;
+    
+    struct No *current = lista->head;
+    struct No *next_node;
     
     while (current) {
         next_node = current->next;
@@ -242,14 +264,16 @@ void limpaLista(Lista *l, void (*free_data)(void *data)) {
         current = next_node;
     }
     
-    l->head = NULL;
-    l->tail = NULL;
-    l->tam = 0;
+    lista->head = NULL;
+    lista->tail = NULL;
+    lista->tam = 0;
 }
 
 void freeLista(Lista *l, void (*free_data)(void *data)) {
-    if (!l) return;
+    struct Lista *lista = (struct Lista*)l;
+    
+    if (!lista) return;
     
     limpaLista(l, free_data);
-    free(l);
+    free(lista);
 }
