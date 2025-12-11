@@ -108,13 +108,9 @@ static int comparaSegAtivos(void* a, void* b) {
     
     if (!sa || !sb) return 0;
     
-    if (sa->anguloInicio < sb->anguloInicio - EPSILON) return -1;
-    if (sa->anguloInicio > sb->anguloInicio + EPSILON) return 1;
-    
-    if (sa->anguloFim < sb->anguloFim - EPSILON) return -1;
-    if (sa->anguloFim > sb->anguloFim + EPSILON) return 1;
-    
-    return (sa->id < sb->id) ? -1 : (sa->id > sb->id) ? 1 : 0;
+    if (sa->id < sb->id) return -1;
+    if (sa->id > sb->id) return 1;
+    return 0;
 }
 
 static int atrasSegmento(Ponto origem, Ponto vertice, SegmentoAtivo* seg) {
@@ -625,48 +621,51 @@ Poligono calculaRegiaoVisivel(Ponto origem, Lista* anteparos, char tipoOrdenacao
             }
             
         } else if (ev->tipo == TIPO_FIM) {
-            printf("[DEBUG PROCESSAMENTO]  FIM de segmento\n");
+    printf("[DEBUG PROCESSAMENTO]  FIM de segmento (id=%d)\n", ev->id);
+    
+    SegmentoAtivo* chave_busca = (SegmentoAtivo*)malloc(sizeof(SegmentoAtivo));
+    if (!chave_busca) {
+        printf("[DEBUG SEGMENTO] ERRO: Falha ao alocar chave de busca\n");
+        continue;
+    }
+    
+    memset(chave_busca, 0, sizeof(SegmentoAtivo));
+    chave_busca->id = ev->id;
+    
+    NoArv* no = buscaBinaria(segAtivos, chave_busca);
+    free(chave_busca);  
+    
+    if (no) {
+        SegmentoAtivo* seg = (SegmentoAtivo*)getNoInfo(no);
+        printf("[DEBUG SEGMENTO] Segmento encontrado: id=%d\n", seg->id);
+        
+        if (seg == biombo_atual) {
+            printf("[DEBUG BIOMBO] Removendo biombo atual\n");
             
-            SegmentoAtivo chave;
-            chave.id = ev->id;
-            
-            NoArv* no = buscaBinaria(segAtivos, &chave);
-            if (no) {
-                SegmentoAtivo* seg = (SegmentoAtivo*)getNoInfo(no);
-                printf("[DEBUG SEGMENTO] Segmento encontrado: id=%d\n", seg->id);
+            if (ponto_biombo) {
+                printf("[DEBUG POLIGONO] Adicionando vértices: biombo->evento\n");
+                adicionaVerticePoligono(poligono, ponto_biombo);
+                adicionaVerticePoligono(poligono, ev->ponto);
                 
-                if (seg == biombo_atual) {
-                    printf("[DEBUG BIOMBO] Removendo biombo atual\n");
-                    
-                    if (ponto_biombo) {
-                        printf("[DEBUG POLIGONO] Adicionando vértices: biombo->evento\n");
-                        adicionaVerticePoligono(poligono, ponto_biombo);
-                        adicionaVerticePoligono(poligono, ev->ponto);
-                        
-                        liberaPonto(ponto_biombo);
-                        ponto_biombo = raioAteAnteparo(segAtivos, origem, ev->angulo, raioMaximo);
-                        
-                        biombo_atual = findSegPerto(segAtivos, origem, ev->angulo);
-                        if (biombo_atual) {
-                            printf("[DEBUG BIOMBO] Novo biombo encontrado: id=%d\n", biombo_atual->id);
-                        } else {
-                            printf("[DEBUG BIOMBO] Nenhum biombo encontrado\n");
-                        }
-                    }
+                liberaPonto(ponto_biombo);
+                ponto_biombo = raioAteAnteparo(segAtivos, origem, ev->angulo, raioMaximo);
+                
+                biombo_atual = findSegPerto(segAtivos, origem, ev->angulo);
+                if (biombo_atual) {
+                    printf("[DEBUG BIOMBO] Novo biombo encontrado: id=%d\n", biombo_atual->id);
+                } else {
+                    printf("[DEBUG BIOMBO] Nenhum biombo encontrado\n");
                 }
-                
-                printf("[DEBUG SEGMENTO] Removendo segmento da árvore\n");
-                removeNo(segAtivos, seg);
-                
-                if (seg->inicio) liberaPonto(seg->inicio);
-                if (seg->fim) liberaPonto(seg->fim);
-                free(seg);
-                
-                printf("[DEBUG SEGMENTO] Segmento removido e liberado\n");
-            } else {
-                printf("[DEBUG SEGMENTO] ERRO: Segmento não encontrado na árvore (id=%d)\n", ev->id);
             }
         }
+        
+        printf("[DEBUG SEGMENTO] Removendo segmento da árvore\n");
+        removeNo(segAtivos, seg);
+        printf("[DEBUG SEGMENTO] Segmento marcado para remoção\n");
+    } else {
+        printf("[DEBUG SEGMENTO] AVISO: Segmento não encontrado na árvore (id=%d)\n", ev->id);
+    }
+}
         
         int num_vertices = getNumVertices(poligono);
         printf("[DEBUG POLIGONO] Vértices após evento %d: %d\n", i+1, num_vertices);
