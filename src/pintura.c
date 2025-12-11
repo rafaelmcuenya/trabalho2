@@ -22,22 +22,18 @@ static void liberaAnteparoSeNecessario(Anteparo anteparo) {
 }
 
 int pintaRetangulo(Retangulo retangulo, int ids[4], Lista* lista) {
+    printf("[DEBUG PINTURA] Entrando em pintaRetangulo\n");
+    
     if (!retangulo || !lista) {
         fprintf(stderr, "Erro: parâmetros inválidos em pintaRetangulo\n");
         return 0;
     }
     
     for (int i = 0; i < 4; i++) {
+        printf("[DEBUG PINTURA] ID[%d] = %d\n", i, ids[i]);
         if (ids[i] <= 0) {
             fprintf(stderr, "Erro: ID %d inválido para anteparo do retângulo\n", ids[i]);
             return 0;
-        }
-        
-        for (int j = 0; j < i; j++) {
-            if (ids[i] == ids[j]) {
-                fprintf(stderr, "Erro: ID duplicado %d para anteparos do retângulo\n", ids[i]);
-                return 0;
-            }
         }
     }
     
@@ -45,7 +41,12 @@ int pintaRetangulo(Retangulo retangulo, int ids[4], Lista* lista) {
     double y = getYRetangulo(retangulo);
     double largura = getLarguraRetangulo(retangulo);
     double altura = getAlturaRetangulo(retangulo);
+    
+    printf("[DEBUG PINTURA] Retângulo: pos=(%.2f,%.2f) larg=%.2f alt=%.2f\n", 
+           x, y, largura, altura);
+    
     char* corBorda = getCorBRetangulo(retangulo);
+    printf("[DEBUG PINTURA] Cor da borda: %s\n", corBorda ? corBorda : "NULL");
     
     if (!corBorda) {
         fprintf(stderr, "Erro: não foi possível obter a cor da borda do retângulo\n");
